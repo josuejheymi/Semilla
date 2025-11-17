@@ -3,45 +3,33 @@ package com.yey.semilla
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.yey.semilla.ui.theme.SemillaTheme
+import androidx.compose.material3.MaterialTheme
+import androidx.navigation.compose.rememberNavController
+import com.yey.semilla.data.local.database.AppDatabase
+import com.yey.semilla.domain.repository.UserRepositoryImpl
+import com.yey.semilla.ui.navigation.AppNavHost
+import com.yey.semilla.ui.viewmodel.UserViewModel
 
 class MainActivity : ComponentActivity() {
+
+    private lateinit var userViewModel: UserViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+
+        // Instanciamos DB y Repository
+        val db = AppDatabase.getInstance(this)
+        val userRepo = UserRepositoryImpl(db.userDao())
+
+        // Creamos el ViewModel
+        userViewModel = UserViewModel(userRepo)
+
         setContent {
-            SemillaTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+            val navController = rememberNavController()
+            MaterialTheme {
+                // Pasamos el ViewModel al NavHost
+                AppNavHost(navController = navController, userViewModel = userViewModel)
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    SemillaTheme {
-        Greeting("Android")
     }
 }
