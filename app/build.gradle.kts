@@ -44,6 +44,13 @@ android {
 }
 
 dependencies {
+
+    // Iconos Material extendidos (Necesario para usar más iconos además de los básicos)
+    implementation("androidx.compose.material:material-icons-extended:1.7.8")
+    // coil compose
+    implementation("io.coil-kt:coil-compose:2.7.0")
+    //camara
+    implementation("androidx.activity:activity-compose:1.11.0")
     // ViewModel KTX (Necesario para usar el ViewModel en Compose)
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
     // Navigation Compose (Necesario para la navegación entre pantallas)
