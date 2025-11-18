@@ -24,7 +24,17 @@ import com.yey.semilla.ui.viewmodel.UserViewModel
  */
 @Composable
 fun LoginScreen(navController: NavController, userViewModel: UserViewModel) {
-
+    //  UserViewModel
+    val loginSuccess by userViewModel.loginSuccess.collectAsState()
+    //Parte importantane-Cuando loginSuccess pasa de false → true, el sensor se activa.
+    //Y lanza la navegación.
+    LaunchedEffect(loginSuccess) {
+        if (loginSuccess) {
+            navController.navigate(Screen.Home.route) {
+                popUpTo(Screen.Login.route) { inclusive = true }
+            }
+        }
+    }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
@@ -58,6 +68,8 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel) {
         Button(
             onClick = {
                 // TODO: validar credenciales con UserViewModel
+                userViewModel.login(email,password)
+
             },
             modifier = Modifier.fillMaxWidth()
         ) {
