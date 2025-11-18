@@ -13,12 +13,11 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ReminderDao {
 
-    // Traer todos los recordatorios con su medicamento
     @Transaction
     @Query("""
         SELECT * FROM reminders
         INNER JOIN medications ON reminders.medicationId = medications.id
-        WHERE medications.userId = :userId
+        WHERE reminders.userId = :userId
     """)
     fun getRemindersWithMedicationByUser(userId: Int): Flow<List<ReminderWithMedication>>
 

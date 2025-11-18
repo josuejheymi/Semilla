@@ -18,10 +18,15 @@ import androidx.room.PrimaryKey
 data class ReminderEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
+
     val medicationId: Int,
+
+    //   El ID del usuario dueño del recordatorio
+    val userId: Int,
+
     val startDate: Long,          // timestamp de inicio
-    val endDate: Long? = null,    // opcional, fecha de fin
-    val timesPerDay: Int = 1,     // cuántas veces se tomará al día
-    val time: String,             // hora (ej: "08:00")
+    val endDate: Long? = null,    // opcional
+    val timesPerDay: Int = 1,     // cuántas veces al día
+    val time: String,             // hora "08:00"
     val isEnabled: Boolean = true
 )

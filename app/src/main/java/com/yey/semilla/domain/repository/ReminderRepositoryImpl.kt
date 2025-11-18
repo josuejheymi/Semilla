@@ -7,7 +7,7 @@
  * * Flujo de Datos: Garantiza que la lectura de recordatorios se haga a través de un Flow,
  * lo que permite que el ViewModel reaccione automáticamente a cualquier cambio en la base de datos.
  */
-package com.yey.semilla.data.local.repository
+package com.yey.semilla.domain.repository
 
 import com.yey.semilla.data.local.dao.MedicationDao
 import com.yey.semilla.data.local.dao.ReminderDao
@@ -41,8 +41,9 @@ class ReminderRepositoryImpl(
     override suspend fun deleteReminder(reminder: ReminderEntity) {
         reminderDao.deleteReminder(reminder)
     }
-    override suspend fun addMedication(medication: MedicationEntity) {
-        medicationDao.addMedication(medication)
-    }
 
+    // 🔥 MÉTODO FALTANTE (AGREGA ESTO)
+    override suspend fun addMedication(med: MedicationEntity) {
+        medicationDao.addMedication(med)
+    }
 }
