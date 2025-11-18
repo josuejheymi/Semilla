@@ -17,7 +17,7 @@ class MedicationRepositoryImpl(private val medicationDao: MedicationDao) : Medic
 
     override suspend fun addMedication(med: MedicationEntity) {
         // Llama a la función de inserción del DAO de Room.
-        medicationDao.insert(med)
+        medicationDao.addMedication(med)
     }
 
     override fun getMedicationsByUser(userId: Int): Flow<List<MedicationEntity>> {

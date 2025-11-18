@@ -36,9 +36,29 @@ class ReminderViewModel(
         }
     }
 
-    fun addReminder(reminder: ReminderEntity) = viewModelScope.launch {
+    // -------------------- NUEVO: Crear recordatorio completo --------------------
+    fun addReminder(
+        medicationId: Int,
+        startDate: Long,
+        endDate: Long? = null,
+        timesPerDay: Int = 1,
+        time: String,
+        isEnabled: Boolean = true
+    ) = viewModelScope.launch {
+        val reminder = ReminderEntity(
+            medicationId = medicationId,
+            startDate = startDate,
+            endDate = endDate,
+            timesPerDay = timesPerDay,
+            time = time,
+            isEnabled = isEnabled
+        )
         repository.addReminder(reminder)
     }
+    fun addMedication(med: MedicationEntity) = viewModelScope.launch {
+        repository.addMedication(med)
+    }
+
 
     fun updateReminder(reminder: ReminderEntity) = viewModelScope.launch {
         repository.updateReminder(reminder)
@@ -46,5 +66,11 @@ class ReminderViewModel(
 
     fun deleteReminder(reminder: ReminderEntity) = viewModelScope.launch {
         repository.deleteReminder(reminder)
+    }
+
+    // -------------------- NUEVO: Activar/Desactivar recordatorio --------------------
+    fun toggleReminderEnabled(reminder: ReminderEntity) = viewModelScope.launch {
+        val updated = reminder.copy(isEnabled = !reminder.isEnabled)
+        repository.updateReminder(updated)
     }
 }

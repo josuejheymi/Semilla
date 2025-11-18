@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface MedicationDao {
     @Insert
-    suspend fun insert(med: MedicationEntity)
+    suspend fun addMedication(medication: MedicationEntity)
 
     @Query("SELECT * FROM medications WHERE userId = :userId")
     // 'Flow': Devuelve un flujo de datos que se actualiza automáticamente. Cada vez que cambian

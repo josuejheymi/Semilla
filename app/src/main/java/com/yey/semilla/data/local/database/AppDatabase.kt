@@ -12,7 +12,7 @@ import com.yey.semilla.data.local.model.*
         MedicationEntity::class,
         ReminderEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
