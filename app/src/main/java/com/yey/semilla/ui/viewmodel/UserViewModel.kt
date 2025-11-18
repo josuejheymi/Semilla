@@ -8,25 +8,20 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-/**
- * 💡 VIEW MODEL DE USUARIOS (Capa de Presentación)
- *
- * Propósito: Gestionar la UI y la lógica de presentación relacionada con los datos del usuario.
- * Actúa como intermediario entre la Vista (UI) y el Repositorio de Usuarios.
- *
- * 1. Estado: Utiliza 'StateFlow' (users) para exponer la lista de usuarios. La UI observa este
- * flujo de datos para actualizarse automáticamente (reactividad).
- *
- * 2. Carga Inicial (init/loadUsers): Al inicializarse, el ViewModel lanza una corrutina
- * para recolectar continuamente ('collect') todos los usuarios del repositorio.
- *
- * 3. Operaciones: La función 'addUser' recibe todos los datos de registro (incluyendo campos de
- * salud como peso y altura), construye la 'UserEntity' y delega la inserción asíncrona al repositorio.
- */
+
 class UserViewModel(private val repository: UserRepository) : ViewModel() {
 
+    // Lista de usuarios (opcional si lo necesitas)
     private val _users = MutableStateFlow<List<UserEntity>>(emptyList())
     val users: StateFlow<List<UserEntity>> = _users.asStateFlow()
+
+    // Usuario actualmente logueado
+    private val _currentUser = MutableStateFlow<UserEntity?>(null)
+    val currentUser: StateFlow<UserEntity?> = _currentUser.asStateFlow()
+
+    // Resultado del login
+    private val _loginSuccess = MutableStateFlow(false)
+    val loginSuccess: StateFlow<Boolean> = _loginSuccess.asStateFlow()
 
     init {
         loadUsers()
@@ -40,6 +35,9 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
         }
     }
 
+    // ---------------------------
+    //      REGISTRAR USUARIO
+    // ---------------------------
     fun addUser(
         name: String,
         email: String,
@@ -63,5 +61,24 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
             )
             repository.addUser(user)
         }
+    }
+
+    // ---------------------------
+    //            LOGIN
+    // ---------------------------
+    fun login(email: String, password: String) {
+        viewModelScope.launch {
+            val user = repository.login(email, password)
+            _loginSuccess.value = user != null
+            _currentUser.value = user
+        }
+    }
+
+    // ---------------------------
+    //           LOGOUT
+    // ---------------------------
+    fun logout() {
+        _currentUser.value = null
+        _loginSuccess.value = false
     }
 }
