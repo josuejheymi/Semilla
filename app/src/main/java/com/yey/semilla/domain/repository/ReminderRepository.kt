@@ -29,5 +29,7 @@ interface ReminderRepository {
     suspend fun addReminder(reminder: ReminderEntity)
     suspend fun updateReminder(reminder: ReminderEntity)
     suspend fun deleteReminder(reminder: ReminderEntity)
+    suspend fun addMedication(medication: MedicationEntity)
+
 }
 

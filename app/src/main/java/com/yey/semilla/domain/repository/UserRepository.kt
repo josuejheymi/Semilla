@@ -32,9 +32,11 @@ import kotlinx.coroutines.flow.Flow
  * | deleteUser()         | Eliminar un usuario de la base de datos. |
  */
 interface UserRepository {
+    //Registrar
     suspend fun addUser(user: UserEntity)
+    //Obtener Lista
     fun getAllUsers(): Flow<List<UserEntity>>
 
-    // lOGINN
+    // lOGINN -
     suspend fun login(email: String, password: String): UserEntity?
 }

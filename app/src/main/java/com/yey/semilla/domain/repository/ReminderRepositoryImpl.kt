@@ -41,4 +41,8 @@ class ReminderRepositoryImpl(
     override suspend fun deleteReminder(reminder: ReminderEntity) {
         reminderDao.deleteReminder(reminder)
     }
+    override suspend fun addMedication(medication: MedicationEntity) {
+        medicationDao.addMedication(medication)
+    }
+
 }
