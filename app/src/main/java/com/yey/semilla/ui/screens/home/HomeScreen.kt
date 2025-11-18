@@ -1,7 +1,6 @@
 package com.yey.semilla.ui.screens.home
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -22,7 +21,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -34,8 +32,10 @@ import coil.compose.rememberAsyncImagePainter
 import com.yey.semilla.data.local.model.MedicationEntity
 import com.yey.semilla.data.local.model.ReminderEntity
 import com.yey.semilla.data.local.model.ReminderWithMedication
+import com.yey.semilla.data.local.model.UserEntity
 import com.yey.semilla.ui.navigation.Screen
 import com.yey.semilla.ui.viewmodel.ReminderViewModel
+import com.yey.semilla.ui.viewmodel.UserViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,7 +43,8 @@ import kotlinx.coroutines.launch
 fun HomeScreen(
     navController: NavController,
     reminderViewModel: ReminderViewModel,
-    userName: String = "Usuario"
+    userViewModel: UserViewModel,
+    user: UserEntity?
 ) {
     // Estado de la lista desde ViewModel
     val remindersState by reminderViewModel.reminders.collectAsState()
@@ -75,15 +76,19 @@ fun HomeScreen(
                 NavigationDrawerItem(
                     label = { Text("Cerrar Sesión") },
                     selected = false,
-                    onClick = { /* TODO: cerrar sesión -> navegar a login y limpiar backstack */ }
-                )
+                    onClick = {
+                        userViewModel.logout()
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(Screen.Home.route) { inclusive = true }
+                        }
+                    })
             }
         }
     ) {
         Scaffold(
             topBar = {
                 CenterAlignedTopAppBar(
-                    title = { Text(text = "Hola, $userName") },
+                    title = { Text(text = "Hola, ${user?.name ?:"Invitado"}") }, //  Muestra el nombre del usuario si es null muestra invitado
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(Icons.Default.Menu, contentDescription = "Abrir menú")

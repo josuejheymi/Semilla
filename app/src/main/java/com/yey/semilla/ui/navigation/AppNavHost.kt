@@ -60,7 +60,8 @@ fun AppNavHost(
 
         // ---------------- RECORDATORIOS ----------------
         composable(Screen.Home.route) {
-            HomeScreen(navController, reminderViewModel)
+            val user = userViewModel.currentUser.collectAsState().value
+            HomeScreen(navController, reminderViewModel, userViewModel,user)
         }
 
         composable(Screen.AddReminder.route) {

@@ -34,4 +34,7 @@ import kotlinx.coroutines.flow.Flow
 interface UserRepository {
     suspend fun addUser(user: UserEntity)
     fun getAllUsers(): Flow<List<UserEntity>>
+
+    // lOGINN
+    suspend fun login(email: String, password: String): UserEntity?
 }

@@ -5,11 +5,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.navigation.compose.rememberNavController
-import com.yey.semilla.data.local.database.AppDatabase_Impl
 import com.yey.semilla.data.local.database.AppDatabase
 import com.yey.semilla.data.local.repository.ReminderRepositoryImpl
 import com.yey.semilla.domain.repository.UserRepositoryImpl
-import com.yey.semilla.domain.repository.ReminderRepository
 import com.yey.semilla.ui.navigation.AppNavHost
 import com.yey.semilla.ui.viewmodel.*
 

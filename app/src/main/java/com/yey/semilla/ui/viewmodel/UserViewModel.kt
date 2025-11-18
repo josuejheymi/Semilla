@@ -24,14 +24,32 @@ import kotlinx.coroutines.launch
  * salud como peso y altura), construye la 'UserEntity' y delega la inserción asíncrona al repositorio.
  */
 class UserViewModel(private val repository: UserRepository) : ViewModel() {
+    // estado loginResult
+    private val _loginSuccess = MutableStateFlow(false)
+    val loginSuccess: StateFlow<Boolean> = _loginSuccess
 
     private val _users = MutableStateFlow<List<UserEntity>>(emptyList())
     val users: StateFlow<List<UserEntity>> = _users.asStateFlow()
 
+    // userRepository o User??
+    private val _currentUser = MutableStateFlow<UserEntity?>(null)
+    val currentUser = _currentUser
+
+
     init {
         loadUsers()
     }
-
+    fun login(email: String, password: String) {
+        viewModelScope.launch {
+            val user = repository.login(email, password)
+            _currentUser.value = user   // Aqui se guarda quien entro
+            _loginSuccess.value = user!= null
+        }
+    }
+    fun logout() {
+        _currentUser.value = null // Limpia al usuario logueado
+        _loginSuccess.value = false // Reiniciar el estado de login
+    }
     private fun loadUsers() {
         viewModelScope.launch {
             repository.getAllUsers().collect { list ->
@@ -64,4 +82,6 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
             repository.addUser(user)
         }
     }
+
+    //
 }
