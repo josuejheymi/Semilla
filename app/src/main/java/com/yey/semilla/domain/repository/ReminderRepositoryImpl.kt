@@ -1,8 +1,3 @@
-package com.yey.semilla.domain.repository
-
-import com.yey.semilla.data.local.dao.ReminderDao
-import com.yey.semilla.data.local.model.ReminderEntity
-import kotlinx.coroutines.flow.Flow
 /**
  * ⏰ IMPLEMENTACIÓN DEL REPOSITORIO DE RECORDATORIOS (Capa de Datos)
  * * Propósito: Clase concreta que implementa el contrato 'ReminderRepository'.
@@ -12,15 +7,38 @@ import kotlinx.coroutines.flow.Flow
  * * Flujo de Datos: Garantiza que la lectura de recordatorios se haga a través de un Flow,
  * lo que permite que el ViewModel reaccione automáticamente a cualquier cambio en la base de datos.
  */
-class ReminderRepositoryImpl(private val reminderDao: ReminderDao) : ReminderRepository {
+package com.yey.semilla.data.local.repository
 
-    override suspend fun addReminder(reminder: ReminderEntity) {
-        // Llama a la función de inserción del DAO de Room.
-        reminderDao.insert(reminder)
+import com.yey.semilla.data.local.dao.MedicationDao
+import com.yey.semilla.data.local.dao.ReminderDao
+import com.yey.semilla.data.local.model.MedicationEntity
+import com.yey.semilla.data.local.model.ReminderEntity
+import com.yey.semilla.data.local.model.ReminderWithMedication
+import com.yey.semilla.domain.repository.ReminderRepository
+import kotlinx.coroutines.flow.Flow
+
+class ReminderRepositoryImpl(
+    private val reminderDao: ReminderDao,
+    private val medicationDao: MedicationDao
+) : ReminderRepository {
+
+    override fun getUserReminders(userId: Int): Flow<List<ReminderWithMedication>> {
+        return reminderDao.getRemindersWithMedicationByUser(userId)
     }
 
-    override fun getRemindersByMedication(medicationId: Int): Flow<List<ReminderEntity>> {
-        // Devuelve el Flow filtrado por ID de medicamento desde el DAO.
-        return reminderDao.getByMedication(medicationId)
+    override fun getUserMedications(userId: Int): Flow<List<MedicationEntity>> {
+        return medicationDao.getByUser(userId)
+    }
+
+    override suspend fun addReminder(reminder: ReminderEntity) {
+        reminderDao.addReminder(reminder)
+    }
+
+    override suspend fun updateReminder(reminder: ReminderEntity) {
+        reminderDao.updateReminder(reminder)
+    }
+
+    override suspend fun deleteReminder(reminder: ReminderEntity) {
+        reminderDao.deleteReminder(reminder)
     }
 }

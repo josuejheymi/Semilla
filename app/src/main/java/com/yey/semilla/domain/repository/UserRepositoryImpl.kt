@@ -22,4 +22,8 @@ class UserRepositoryImpl(private val userDao: UserDao) : UserRepository {
     override fun getAllUsers(): Flow<List<UserEntity>> {
         return userDao.getAll()
     }
+    override suspend fun login(email: String, password: String): UserEntity? {
+        return userDao.login(email, password)
+    }
+
 }

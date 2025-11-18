@@ -3,33 +3,46 @@ package com.yey.semilla
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material3.MaterialTheme
+import androidx.activity.viewModels
 import androidx.navigation.compose.rememberNavController
 import com.yey.semilla.data.local.database.AppDatabase
+import com.yey.semilla.data.local.repository.ReminderRepositoryImpl
 import com.yey.semilla.domain.repository.UserRepositoryImpl
 import com.yey.semilla.ui.navigation.AppNavHost
-import com.yey.semilla.ui.viewmodel.UserViewModel
+import com.yey.semilla.ui.viewmodel.*
 
 class MainActivity : ComponentActivity() {
-
-    private lateinit var userViewModel: UserViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Instanciamos DB y Repository
-        val db = AppDatabase.getInstance(this)
-        val userRepo = UserRepositoryImpl(db.userDao())
+        // Simular userId (luego lo reemplazas con prefs o login)
+        val userId = 1
 
-        // Creamos el ViewModel
-        userViewModel = UserViewModel(userRepo)
+        // DataSources
+        val db = AppDatabase.getInstance(this)
+
+
+        val userRepository = UserRepositoryImpl(db.userDao())
+        val reminderRepository = ReminderRepositoryImpl(db.reminderDao(),db.medicationDao())
+
+        // ViewModels con Factory
+        val userViewModel: UserViewModel by viewModels {
+            UserViewModelFactory(userRepository)
+        }
+
+        val reminderViewModel: ReminderViewModel by viewModels {
+            ReminderViewModelFactory(reminderRepository, userId)
+        }
 
         setContent {
             val navController = rememberNavController()
-            MaterialTheme {
-                // Pasamos el ViewModel al NavHost
-                AppNavHost(navController = navController, userViewModel = userViewModel)
-            }
+
+            AppNavHost(
+                navController = navController,
+                userViewModel = userViewModel,
+                reminderViewModel = reminderViewModel
+            )
         }
     }
 }
