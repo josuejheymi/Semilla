@@ -45,24 +45,24 @@ android {
 
 dependencies {
 
-    // Iconos Material extendidos (Necesario para usar más iconos además de los básicos)
-    implementation("androidx.compose.material:material-icons-extended:1.7.8")
-    // coil compose
-    implementation("io.coil-kt:coil-compose:2.7.0")
-    //camara
-    implementation("androidx.activity:activity-compose:1.11.0")
-    // ViewModel KTX (Necesario para usar el ViewModel en Compose)
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
-    // Navigation Compose (Necesario para la navegación entre pantallas)
-    implementation("androidx.navigation:navigation-compose:2.7.0")
-    // Corrutinas (Para tareas asíncronas en el ViewModel)
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-    val room_version = "2.8.3"
-    implementation("androidx.room:room-runtime:$room_version")
-    // Room KTX (Necesario para Corrutinas en Room)
-    implementation("androidx.room:room-ktx:$room_version")
-    // Room Compiler (Necesario para la generación de código de la base de datos)
-    kapt ("androidx.room:room-compiler:$room_version")
+        // Iconos Material extendidos (Necesario para usar más iconos además de los básicos)
+        implementation("androidx.compose.material:material-icons-extended:1.7.8")
+        // coil compose
+        implementation("io.coil-kt:coil-compose:2.7.0")
+        //camara
+        implementation("androidx.activity:activity-compose:1.11.0")
+        // ViewModel KTX (Necesario para usar el ViewModel en Compose)
+        implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
+        // Navigation Compose (Necesario para la navegación entre pantallas)
+        implementation("androidx.navigation:navigation-compose:2.7.0")
+        // Corrutinas (Para tareas asíncronas en el ViewModel)
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+        val room_version = "2.8.3"
+        implementation("androidx.room:room-runtime:$room_version")
+        // Room KTX (Necesario para Corrutinas en Room)
+        implementation("androidx.room:room-ktx:$room_version")
+        // Room Compiler (Necesario para la generación de código de la base de datos)
+        kapt ("androidx.room:room-compiler:$room_version")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
