@@ -1,4 +1,4 @@
-package com.yey.semilla.ui.screens.home.user
+package com.yey.semilla.ui.screens.user
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*

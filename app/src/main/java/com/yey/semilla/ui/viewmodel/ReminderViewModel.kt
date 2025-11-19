@@ -13,30 +13,29 @@ import kotlinx.coroutines.launch
 
 class ReminderViewModel(
     private val repository: ReminderRepository,
-    private val userId: Int
+    private val userId: Int // 🔥 USUARIO ACTUAL
 ) : ViewModel() {
 
-    // Lista de recordatorios
     private val _reminders = MutableStateFlow<List<ReminderWithMedication>>(emptyList())
     val reminders: StateFlow<List<ReminderWithMedication>> = _reminders.asStateFlow()
 
-    // Lista de medicamentos
     private val _medications = MutableStateFlow<List<MedicationEntity>>(emptyList())
     val medications: StateFlow<List<MedicationEntity>> = _medications.asStateFlow()
 
     init {
-        // Cargar recordatorios
         viewModelScope.launch {
-            repository.getUserReminders(userId).collect { _reminders.value = it }
+            repository.getUserReminders(userId).collect {
+                _reminders.value = it
+            }
         }
 
-        // Cargar medicamentos
         viewModelScope.launch {
-            repository.getUserMedications(userId).collect { _medications.value = it }
+            repository.getUserMedications(userId).collect {
+                _medications.value = it
+            }
         }
     }
 
-    // -------------------- NUEVO: Crear recordatorio completo --------------------
     fun addReminder(
         medicationId: Int,
         startDate: Long,
@@ -45,20 +44,23 @@ class ReminderViewModel(
         time: String,
         isEnabled: Boolean = true
     ) = viewModelScope.launch {
+
         val reminder = ReminderEntity(
             medicationId = medicationId,
+            userId = userId,          // 🔥 AQUÍ SE ASIGNA AL USUARIO
             startDate = startDate,
             endDate = endDate,
             timesPerDay = timesPerDay,
             time = time,
             isEnabled = isEnabled
         )
+
         repository.addReminder(reminder)
     }
+
     fun addMedication(med: MedicationEntity) = viewModelScope.launch {
         repository.addMedication(med)
     }
-
 
     fun updateReminder(reminder: ReminderEntity) = viewModelScope.launch {
         repository.updateReminder(reminder)
@@ -68,7 +70,6 @@ class ReminderViewModel(
         repository.deleteReminder(reminder)
     }
 
-    // -------------------- NUEVO: Activar/Desactivar recordatorio --------------------
     fun toggleReminderEnabled(reminder: ReminderEntity) = viewModelScope.launch {
         val updated = reminder.copy(isEnabled = !reminder.isEnabled)
         repository.updateReminder(updated)

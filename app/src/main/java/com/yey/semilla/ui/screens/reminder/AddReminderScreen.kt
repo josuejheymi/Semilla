@@ -1,4 +1,4 @@
-package com.yey.semilla.ui.screens.home.reminder
+package com.yey.semilla.ui.screens.reminder
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -21,7 +21,6 @@ fun AddReminderScreen(
     reminderViewModel: ReminderViewModel,
     medications: List<MedicationEntity>
 ) {
-    // ---------------- STATE ----------------
     var selectedMedication by remember { mutableStateOf<MedicationEntity?>(null) }
     var time by remember { mutableStateOf("") }
     var timesPerDay by remember { mutableStateOf("1") }
@@ -29,7 +28,6 @@ fun AddReminderScreen(
     val startDate = System.currentTimeMillis()
     val endDate: Long? = null
 
-    // TIME PICKER
     var showTimePicker by remember { mutableStateOf(false) }
     val timePickerState = rememberTimePickerState(
         initialHour = 8,
@@ -49,25 +47,17 @@ fun AddReminderScreen(
                 }) { Text("OK") }
             },
             dismissButton = {
-                TextButton(onClick = { showTimePicker = false }) {
-                    Text("Cancelar")
-                }
+                TextButton(onClick = { showTimePicker = false }) { Text("Cancelar") }
             },
             text = { TimePicker(state = timePickerState) }
         )
     }
 
-    // ---------------- UI ----------------
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
+    Column(Modifier.fillMaxSize().padding(16.dp)) {
 
         Text("Agregar Recordatorio", style = MaterialTheme.typography.titleLarge)
         Spacer(Modifier.height(20.dp))
 
-        // --------- NO MEDICAMENTOS ---------
         if (medications.isEmpty()) {
             Text("No tienes medicamentos registrados.")
             Spacer(Modifier.height(10.dp))
@@ -80,7 +70,6 @@ fun AddReminderScreen(
             return
         }
 
-        // --------- SELECTOR DE MEDICAMENTO ---------
         var expanded by remember { mutableStateOf(false) }
 
         Text("Selecciona un medicamento:")
@@ -96,9 +85,7 @@ fun AddReminderScreen(
                 readOnly = true,
                 label = { Text("Medicamento") },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-                modifier = Modifier
-                    .menuAnchor()
-                    .fillMaxWidth()
+                modifier = Modifier.menuAnchor().fillMaxWidth()
             )
 
             ExposedDropdownMenu(
@@ -127,7 +114,6 @@ fun AddReminderScreen(
 
         Spacer(Modifier.height(20.dp))
 
-        // --------- HORA ---------
         OutlinedTextField(
             value = if (time.isEmpty()) "Selecciona una hora" else time,
             onValueChange = {},
@@ -143,11 +129,10 @@ fun AddReminderScreen(
 
         Spacer(Modifier.height(20.dp))
 
-        // --------- VECES AL DÍA ---------
         OutlinedTextField(
             value = timesPerDay,
-            onValueChange = { new ->
-                timesPerDay = new.filter { it.isDigit() }.ifEmpty { "1" }
+            onValueChange = { value ->
+                timesPerDay = value.filter { it.isDigit() }.ifEmpty { "1" }
             },
             label = { Text("Veces al día") },
             modifier = Modifier.fillMaxWidth()
@@ -155,7 +140,6 @@ fun AddReminderScreen(
 
         Spacer(Modifier.height(30.dp))
 
-        // --------- BOTÓN GUARDAR ---------
         Button(
             onClick = {
                 val med = selectedMedication ?: return@Button
