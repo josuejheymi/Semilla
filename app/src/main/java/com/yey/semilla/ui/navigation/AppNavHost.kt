@@ -1,6 +1,7 @@
 package com.yey.semilla.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -11,8 +12,9 @@ import com.yey.semilla.ui.screens.auth.LoginScreen
 import com.yey.semilla.ui.screens.auth.RegisterScreen
 import com.yey.semilla.ui.screens.auth.SplashScreen
 
-// 👉 HOME & REMINDERS
+// 👉 HOME
 import com.yey.semilla.ui.screens.home.HomeScreen
+import com.yey.semilla.ui.screens.home.PerfilScreen
 import com.yey.semilla.ui.screens.home.reminder.AddReminderScreen
 
 // 👉 USERS
@@ -42,7 +44,6 @@ sealed class Screen(val route: String) {
 
     object Profile : Screen("profile")
 
-    // 👉 Nuevo
     object AddMedication : Screen("add_medication")
 }
 
@@ -52,43 +53,80 @@ fun AppNavHost(
     userViewModel: UserViewModel,
     reminderViewModel: ReminderViewModel
 ) {
-    NavHost(navController = navController, startDestination = Screen.Splash.route) {
+    // 👉 ESTADO DE LOGIN
+    val loginSuccess = userViewModel.loginSuccess.collectAsState().value
 
-        // ---------------- AUTH ----------------
-        composable(Screen.Splash.route) { SplashScreen(navController) }
-        composable(Screen.Login.route) { LoginScreen(navController, userViewModel) }
-        composable(Screen.Register.route) { RegisterScreen(navController, userViewModel) }
+    // ⭐ REACCIONA AUTOMÁTICAMENTE CUANDO EL LOGIN ES EXITOSO
+    LaunchedEffect(loginSuccess) {
+        if (loginSuccess) {
+            navController.navigate(Screen.Home.route) {
+                popUpTo(Screen.Login.route) { inclusive = true }
+            }
+        }
+    }
 
-        // ---------------- USERS ----------------
-        composable(Screen.UserList.route) { UserListScreen(navController, userViewModel) }
-        composable(Screen.UserRegister.route) { UserRegisterScreen(navController, userViewModel) }
+    NavHost(
+        navController = navController,
+        startDestination = Screen.Splash.route
+    ) {
 
-        // ---------------- HOME ----------------
+        // -------------------- AUTH --------------------
+        composable(Screen.Splash.route) {
+            SplashScreen(navController)
+        }
+
+        composable(Screen.Login.route) {
+            LoginScreen(
+                navController = navController,
+                onLogin = { email, password ->
+                    userViewModel.login(email, password)
+                },
+                userViewModel = userViewModel
+            )
+        }
+
+
+        composable(Screen.Register.route) {
+            RegisterScreen(navController, userViewModel)
+        }
+
+        // -------------------- USERS --------------------
+        composable(Screen.UserList.route) {
+            UserListScreen(navController, userViewModel)
+        }
+
+        composable(Screen.UserRegister.route) {
+            UserRegisterScreen(navController, userViewModel)
+        }
+
+        // -------------------- HOME --------------------
         composable(Screen.Home.route) {
             val user = userViewModel.currentUser.collectAsState().value
             HomeScreen(navController, reminderViewModel, userViewModel, user)
         }
 
-        // ---------------- REMINDERS ----------------
+        // -------------------- REMINDERS --------------------
         composable(Screen.AddReminder.route) {
             val meds = reminderViewModel.medications.collectAsState().value
             AddReminderScreen(navController, reminderViewModel, meds)
         }
 
-        composable(Screen.EditReminder.route) { backStackEntry ->
+        composable(Screen.EditReminder.route) {
             val meds = reminderViewModel.medications.collectAsState().value
             AddReminderScreen(navController, reminderViewModel, meds)
         }
 
-        // ---------------- MEDICATIONS ----------------
+        // -------------------- MEDICATIONS --------------------
         composable(Screen.AddMedication.route) {
             val user = userViewModel.currentUser.collectAsState().value
             AddMedicationScreen(navController, reminderViewModel, user!!.id)
         }
 
-        // ---------------- PROFILE ----------------
+        // -------------------- PROFILE --------------------
         composable(Screen.Profile.route) {
-            // Próximamente: Perfil
+            val user = userViewModel.currentUser.collectAsState().value
+            PerfilScreen(navController, user)
         }
+
     }
 }

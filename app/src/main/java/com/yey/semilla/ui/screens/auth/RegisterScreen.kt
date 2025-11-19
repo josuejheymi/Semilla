@@ -1,9 +1,12 @@
 package com.yey.semilla.ui.screens.auth
 
+import android.Manifest
+import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -12,104 +15,189 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import coil.compose.rememberAsyncImagePainter
-import com.yey.semilla.ui.navigation.Screen
+import coil.compose.AsyncImage
 import com.yey.semilla.ui.viewmodel.UserViewModel
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
 
-/**
- * 📝 PANTALLA DE REGISTRO (RegisterScreen)
- *
- * Propósito: Composable para la creación de una nueva cuenta de usuario.
- * Se encarga de capturar la información de texto y la URI de la foto.
- *
- * @param navController Controlador de navegación para redirigir al Login tras el registro.
- * @param userViewModel ViewModel para ejecutar la lógica de guardar el usuario en la DB.
- */
 @Composable
-fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
-    // ESTADO: Variables reactivas que almacenan los datos de los campos de texto.
+fun RegisterScreen(
+    navController: NavController,
+    userViewModel: UserViewModel
+) {
+    val context = LocalContext.current
+
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var photoUri by remember { mutableStateOf<Uri?>(null) }
+    var genero by remember { mutableStateOf("") }
+    var fechaNacimiento by remember { mutableStateOf(0L) }
+    var peso by remember { mutableStateOf("") }
+    var altura by remember { mutableStateOf("") }
 
-    // Launchers para galería y cámara
-    val launcherGallery = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        if (uri != null) photoUri = uri
+    // FOTO
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
+
+    // ---------------- PERMISOS ----------------
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) {}
+
+    // ---------------- GALERÍA ----------------
+    val galleryLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) selectedImageUri = uri
     }
 
-    val launcherCamera = rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap ->
-        // Si quieres usar bitmap directo, puedes guardarlo en URI temporal o convertir a archivo
+    // ---------------- CÁMARA ----------------
+    val cameraLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success) {
+            selectedImageUri = tempCameraUri
+        }
     }
 
+    fun createImageUri(context: Context): Uri {
+        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        val file = File(context.cacheDir, "IMG_$timeStamp.jpg")
+        return androidx.core.content.FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.fileprovider",
+            file
+        )
+    }
+
+    // ---------------- UI ----------------
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
+            .padding(16.dp)
     ) {
-        Text("Registrar Usuario", style = MaterialTheme.typography.headlineMedium)
-        Spacer(modifier = Modifier.height(16.dp))
+        Text("Crear cuenta", style = MaterialTheme.typography.headlineMedium)
+        Spacer(Modifier.height(16.dp))
 
-        // Foto del usuario
+        // FOTO DE PERFIL
         Box(
             modifier = Modifier
-                .size(100.dp)
+                .size(120.dp)
                 .clip(CircleShape)
-                .clickable { launcherGallery.launch("image/*") },
-            contentAlignment = Alignment.Center
+                .background(Color.LightGray)
+                .clickable { }
+                .align(Alignment.CenterHorizontally)
         ) {
-            if (photoUri != null) {
-                Image(
-                    //carga la imagen desde un URI en Compose
-                    painter = rememberAsyncImagePainter(photoUri),
-                    contentDescription = "Foto de perfil",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
+            if (selectedImageUri != null) {
+                AsyncImage(
+                    model = selectedImageUri,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize()
                 )
             } else {
-                Text("Agregar Foto")
+                Text(
+                    "Foto",
+                    modifier = Modifier.align(Alignment.Center),
+                    color = Color.DarkGray
+                )
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-        // CAMPOS DE TEXTO: Captura de datos básicos.
-        OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Nombre") }, modifier = Modifier.fillMaxWidth())
-        Spacer(modifier = Modifier.height(8.dp))
-        OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Email") }, modifier = Modifier.fillMaxWidth())
-        Spacer(modifier = Modifier.height(8.dp))
-        OutlinedTextField(value = password, onValueChange = { password = it }, label = { Text("Password") }, modifier = Modifier.fillMaxWidth())
+        Spacer(Modifier.height(10.dp))
 
-        Spacer(modifier = Modifier.height(16.dp))
-        // BOTÓN GUARDAR: Ejecuta la lógica de registro.
-        Button(onClick = {
-            // Lógica de validación mínima.
-            if (name.isNotBlank() && email.isNotBlank() && password.isNotBlank()) {
-                // Llama al ViewModel para guardar el usuario.
-                userViewModel.addUser(
-                    name = name,
-                    email = email,
-                    password = password,
-                    // Se usan valores por defecto para los campos de salud/fecha de nacimiento
-                    // que deberían ser capturados en la UI real.
-                    fechanacimiento = 0L,
-                    genero = "Otro",
-                    peso = 0.0,
-                    altura = 0.0,
-                    // Convierte la URI a String para almacenarla en la DB.
-                    photoUri = photoUri?.toString()
-                )
-                // Navega de vuelta a la pantalla de Login y limpia la pila de navegación.
-                navController.navigate(Screen.Login.route) {
-                    popUpTo(Screen.Register.route) { inclusive = true }
-                }
+        // BOTONES
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Button(onClick = {
+                permissionLauncher.launch(Manifest.permission.CAMERA)
+
+                val uri = createImageUri(context)
+                tempCameraUri = uri
+                cameraLauncher.launch(uri)
+
+            }) { Text("Cámara") }
+
+            Button(onClick = { galleryLauncher.launch("image/*") }) {
+                Text("Galería")
             }
-        }, modifier = Modifier.fillMaxWidth()) {
-            Text("Guardar")
+        }
+
+        Spacer(Modifier.height(20.dp))
+
+        // CAMPOS
+        OutlinedTextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Nombre") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Contraseña") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value = genero,
+            onValueChange = { genero = it },
+            label = { Text("Género") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value = peso,
+            onValueChange = { peso = it },
+            label = { Text("Peso (kg)") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value = altura,
+            onValueChange = { altura = it },
+            label = { Text("Altura (cm)") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(Modifier.height(20.dp))
+
+        Button(
+            onClick = {
+                if (
+                    name.isNotEmpty() &&
+                    email.isNotEmpty() &&
+                    password.isNotEmpty() &&
+                    genero.isNotEmpty()
+                ) {
+                    userViewModel.addUser(
+                        name = name,
+                        email = email,
+                        password = password,
+                        genero = genero,
+                        fechanacimiento = System.currentTimeMillis(),
+                        peso = peso.toDoubleOrNull() ?: 0.0,
+                        altura = altura.toDoubleOrNull() ?: 0.0,
+                        photoUri = selectedImageUri?.toString()
+                    )
+
+                    navController.navigate("login") {
+                        popUpTo("register") { inclusive = true }
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Crear cuenta")
         }
     }
 }
