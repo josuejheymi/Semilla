@@ -5,13 +5,12 @@ import androidx.lifecycle.ViewModelProvider
 import com.yey.semilla.domain.repository.ReminderRepository
 
 class ReminderViewModelFactory(
-    private val repository: ReminderRepository,
-    private val userId: Int
+    private val repository: ReminderRepository
 ) : ViewModelProvider.Factory {
 
     override fun <T: ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ReminderViewModel::class.java)) {
-            return ReminderViewModel(repository, userId) as T
+            return ReminderViewModel(repository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

@@ -12,8 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class ReminderViewModel(
-    private val repository: ReminderRepository,
-    private val userId: Int // 🔥 USUARIO ACTUAL
+    private val repository: ReminderRepository
 ) : ViewModel() {
 
     private val _reminders = MutableStateFlow<List<ReminderWithMedication>>(emptyList())
@@ -22,20 +21,31 @@ class ReminderViewModel(
     private val _medications = MutableStateFlow<List<MedicationEntity>>(emptyList())
     val medications: StateFlow<List<MedicationEntity>> = _medications.asStateFlow()
 
-    init {
+    // 👉 usuario actual dinámico
+    private var currentUserId: Int? = null
+
+    /**
+     * 🔥 Cargar datos del usuario actual
+     */
+    fun loadForUser(userId: Int) {
+        currentUserId = userId
+
         viewModelScope.launch {
-            repository.getUserReminders(userId).collect {
-                _reminders.value = it
+            repository.getUserReminders(userId).collect { list ->
+                _reminders.value = list
             }
         }
 
         viewModelScope.launch {
-            repository.getUserMedications(userId).collect {
-                _medications.value = it
+            repository.getUserMedications(userId).collect { list ->
+                _medications.value = list
             }
         }
     }
 
+    /**
+     * 🔥 Crear recordatorio ATADO al usuario correcto
+     */
     fun addReminder(
         medicationId: Int,
         startDate: Long,
@@ -45,9 +55,11 @@ class ReminderViewModel(
         isEnabled: Boolean = true
     ) = viewModelScope.launch {
 
+        val userId = currentUserId ?: return@launch
+
         val reminder = ReminderEntity(
             medicationId = medicationId,
-            userId = userId,          // 🔥 AQUÍ SE ASIGNA AL USUARIO
+            userId = userId,   // ahora SIEMPRE el usuario correcto
             startDate = startDate,
             endDate = endDate,
             timesPerDay = timesPerDay,

@@ -9,7 +9,7 @@ import androidx.navigation.NavController
 import com.yey.semilla.ui.navigation.Screen
 import com.yey.semilla.ui.viewmodel.UserViewModel
 import kotlinx.coroutines.delay
-
+// El LoginScreen es un Composable (una pieza de UI) que permite al usuario ingresar sus credenciales. Muestra cómo la UI se conecta con el UserViewModel para manejar el estado (éxito/fallo del login) y las acciones (el botón de ingreso).
 @Composable
 fun LoginScreen(
     navController: NavController,
@@ -19,12 +19,13 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    val loginSuccess by userViewModel.loginSuccess.collectAsState()
+    // Observa cambios en loginSuccess y currentUser automáticamente
+    val loginSuccess by userViewModel.loginSuccess.collectAsState() //Convierte Flow de ViewModel a estado de Compose
     val currentUser by userViewModel.currentUser.collectAsState()
 
     var loginError by remember { mutableStateOf<String?>(null) }
 
-    // 🔥 Navegar cuando el login funciona
+    //  Navegar cuando el login funciona
     LaunchedEffect(loginSuccess) {
         if (loginSuccess && currentUser != null) {
             loginError = null

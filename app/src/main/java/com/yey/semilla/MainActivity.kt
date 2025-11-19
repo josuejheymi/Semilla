@@ -16,21 +16,32 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val userId = 1
+        // 🔥 Inicializamos la base de datos Room
         val db = AppDatabase.getInstance(this)
 
+        // 🔥 Creamos los repositorios reales que acceden a la DB
         val userRepository = UserRepositoryImpl(db.userDao())
         val reminderRepository = ReminderRepositoryImpl(db.reminderDao(), db.medicationDao())
 
+        // 🔥 ViewModel de usuario
+        // Se crea usando una Factory que le entrega el userRepository
         val userViewModel: UserViewModel by viewModels {
             UserViewModelFactory(userRepository)
         }
+
+        // 🔥 ViewModel de recordatorios
+        // 🚫 YA NO RECIBE userId AQUÍ
+        // El usuario activo se carga dinámicamente luego de login.
         val reminderViewModel: ReminderViewModel by viewModels {
-            ReminderViewModelFactory(reminderRepository, userId)
+            ReminderViewModelFactory(reminderRepository)
         }
 
+        // 🔥 Composición de la UI usando Jetpack Compose
         setContent {
+
             val navController = rememberNavController()
+
+            // ⛓️ Conectamos navegación con los ViewModels
             AppNavHost(
                 navController = navController,
                 userViewModel = userViewModel,
