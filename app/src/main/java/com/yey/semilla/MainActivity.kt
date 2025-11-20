@@ -9,6 +9,7 @@ import com.yey.semilla.data.local.database.AppDatabase
 import com.yey.semilla.domain.repository.ReminderRepositoryImpl
 import com.yey.semilla.domain.repository.UserRepositoryImpl
 import com.yey.semilla.ui.navigation.AppNavHost
+import com.yey.semilla.ui.theme.SemillaTheme
 import com.yey.semilla.ui.viewmodel.*
 
 class MainActivity : ComponentActivity() {
@@ -38,15 +39,15 @@ class MainActivity : ComponentActivity() {
 
         // 🔥 Composición de la UI usando Jetpack Compose
         setContent {
-
-            val navController = rememberNavController()
-
-            // ⛓️ Conectamos navegación con los ViewModels
-            AppNavHost(
-                navController = navController,
-                userViewModel = userViewModel,
-                reminderViewModel = reminderViewModel
-            )
+            SemillaTheme {
+                val navController = rememberNavController()
+                AppNavHost(
+                    navController = navController,
+                    userViewModel = userViewModel,
+                    reminderViewModel = reminderViewModel
+                )
+            }
         }
+
     }
 }

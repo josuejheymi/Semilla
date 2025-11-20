@@ -18,34 +18,32 @@ import androidx.core.view.WindowCompat
 
 // --- PALETA DE COLOR CLARO (Usando los colores sugeridos anteriormente) ---
 private val LightColorScheme = lightColorScheme(
-    primary = PrimaryBlue,          // 0xFF007AFF
-    secondary = SecondaryGreen,     // 0xFF34C759
-    background = BackgroundLight,   // 0xFFF9F9F9
-    surface = SurfaceLight,         // 0xFFFFFFFF
-    error = ErrorRed,               // 0xFFFF3B30
-    onPrimary = Color.White,        // El color del texto sobre el PrimaryBlue
-    onSurface = TextDark,           // Color de texto principal
-    onBackground = TextDark         // Color de texto principal en el fondo
-
-    /*
-     * Puedes añadir más propiedades (onSecondary, onError, etc.) si es necesario,
-     * pero las anteriores son suficientes para la base.
-     */
-)
-
-// --- PALETA DE COLOR OSCURO (Dark Theme) ---
-// **Nota:** Debes definir estos colores (PrimaryDark, BackgroundDark, etc.)
-// en tu archivo Color.kt para que no dé error.
-private val DarkColorScheme = darkColorScheme(
-    primary = PrimaryBlue,          // Usamos un azul vibrante similar, o quizás un tono más oscuro si lo deseas
-    secondary = SecondaryGreen,
-    background = Color(0xFF1C1C1E), // Negro casi puro, común en apps modernas
-    surface = Color(0xFF2C2C2E),    // Ligeramente más claro para tarjetas
-    error = ErrorRed,
+    primary = Turquoise500,
+    secondary = Turquoise700,
+    background = Turquoise50,
+    surface = Color.White,
     onPrimary = Color.White,
-    onSurface = Color.White,
-    onBackground = Color.White
+    onBackground = Color(0xFF00332F),
+    onSurface = Color(0xFF00332F)
 )
+
+private val DarkColorScheme = darkColorScheme(
+    primary = TurquoiseDark,
+    onPrimary = TextLight,
+
+    secondary = MintSoft,
+
+    background = BackgroundDark,
+    onBackground = TextLight,
+
+    surface = SurfaceDark,
+    onSurface = TextLight,
+
+    error = ErrorRed
+)
+
+
+
 
 @Composable
 fun SemillaTheme(
