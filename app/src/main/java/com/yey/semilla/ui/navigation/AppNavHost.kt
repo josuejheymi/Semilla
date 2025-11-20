@@ -59,6 +59,12 @@ fun AppNavHost(
     // ⭐ REACCIONA AUTOMÁTICAMENTE CUANDO EL LOGIN ES EXITOSO
     LaunchedEffect(loginSuccess) {
         if (loginSuccess) {
+            val user = userViewModel.currentUser.value
+            if (user != null) {
+                // Cargar datos del usuario correcto
+                reminderViewModel.loadForUser(user.id)
+            }
+
             navController.navigate(Screen.Home.route) {
                 popUpTo(Screen.Login.route) { inclusive = true }
             }
