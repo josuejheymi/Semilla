@@ -1,6 +1,7 @@
 package com.yey.semilla.ui.screens.auth
 
 import android.Manifest
+import android.app.DatePickerDialog
 import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -25,6 +26,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
     navController: NavController,
@@ -32,38 +34,36 @@ fun RegisterScreen(
 ) {
     val context = LocalContext.current
 
+    // ---------------- CAMPOS DE TEXTO ----------------
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var genero by remember { mutableStateOf("") }
-    var fechaNacimiento by remember { mutableStateOf(0L) }
+    var genero by remember { mutableStateOf("Seleccionar") }
     var peso by remember { mutableStateOf("") }
     var altura by remember { mutableStateOf("") }
+    var fechaNacimiento by remember { mutableStateOf(0L) }
 
-    // FOTO
+    // ---------------- ERRORES ----------------
+    var errorMsg by remember { mutableStateOf<String?>(null) }
+
+    // ---------------- FOTO PERFIL ----------------
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
 
-    // ---------------- PERMISOS ----------------
+    // Permisos cámara
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) {}
 
-    // ---------------- GALERÍA ----------------
+    // Galería
     val galleryLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
-    ) { uri ->
-        if (uri != null) selectedImageUri = uri
-    }
+    ) { uri -> if (uri != null) selectedImageUri = uri }
 
-    // ---------------- CÁMARA ----------------
+    // Cámara
     val cameraLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.TakePicture()
-    ) { success ->
-        if (success) {
-            selectedImageUri = tempCameraUri
-        }
-    }
+    ) { success -> if (success) selectedImageUri = tempCameraUri }
 
     fun createImageUri(context: Context): Uri {
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
@@ -75,129 +75,233 @@ fun RegisterScreen(
         )
     }
 
-    // ---------------- UI ----------------
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Text("Crear cuenta", style = MaterialTheme.typography.headlineMedium)
-        Spacer(Modifier.height(16.dp))
+    // ---------------- DATE PICKER ----------------
+    val calendar = Calendar.getInstance()
 
-        // FOTO DE PERFIL
-        Box(
+    val datePicker = DatePickerDialog(
+        context,
+        { _, year, month, day ->
+            calendar.set(year, month, day)
+            fechaNacimiento = calendar.timeInMillis
+        },
+        calendar.get(Calendar.YEAR) - 20,
+        calendar.get(Calendar.MONTH),
+        calendar.get(Calendar.DAY_OF_MONTH)
+    )
+
+    // ---------------- GÉNERO DROPDOWN ----------------
+    var generoExpanded by remember { mutableStateOf(false) }
+    val generos = listOf("Hombre", "Mujer")
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color(0xFFE0FFFA)) {
+
+        // ---------------- UI ----------------
+        Column(
             modifier = Modifier
-                .size(120.dp)
-                .clip(CircleShape)
-                .background(Color.LightGray)
-                .clickable { }
-                .align(Alignment.CenterHorizontally)
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (selectedImageUri != null) {
-                AsyncImage(
-                    model = selectedImageUri,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize()
-                )
-            } else {
+
+            Text("Crear cuenta",
+                color = Color(0xFF009688),
+                style = MaterialTheme.typography.headlineMedium)
+
+            Spacer(Modifier.height(1.dp))
+
+            // ERRORES
+            errorMsg?.let {
                 Text(
-                    "Foto",
-                    modifier = Modifier.align(Alignment.Center),
-                    color = Color.DarkGray
+                    text = it,
+                    color = Color(0xFFFF0000), //Color de las letras de error
+                    modifier = Modifier.padding(bottom = 1.dp)
                 )
             }
-        }
 
-        Spacer(Modifier.height(10.dp))
-
-        // BOTONES
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Button(onClick = {
-                permissionLauncher.launch(Manifest.permission.CAMERA)
-
-                val uri = createImageUri(context)
-                tempCameraUri = uri
-                cameraLauncher.launch(uri)
-
-            }) { Text("Cámara") }
-
-            Button(onClick = { galleryLauncher.launch("image/*") }) {
-                Text("Galería")
-            }
-        }
-
-        Spacer(Modifier.height(20.dp))
-
-        // CAMPOS
-        OutlinedTextField(
-            value = name,
-            onValueChange = { name = it },
-            label = { Text("Nombre") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Contraseña") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = genero,
-            onValueChange = { genero = it },
-            label = { Text("Género") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = peso,
-            onValueChange = { peso = it },
-            label = { Text("Peso (kg)") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = altura,
-            onValueChange = { altura = it },
-            label = { Text("Altura (cm)") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(Modifier.height(20.dp))
-
-        Button(
-            onClick = {
-                if (
-                    name.isNotEmpty() &&
-                    email.isNotEmpty() &&
-                    password.isNotEmpty() &&
-                    genero.isNotEmpty()
-                ) {
-                    userViewModel.addUser(
-                        name = name,
-                        email = email,
-                        password = password,
-                        genero = genero,
-                        fechanacimiento = System.currentTimeMillis(),
-                        peso = peso.toDoubleOrNull() ?: 0.0,
-                        altura = altura.toDoubleOrNull() ?: 0.0,
-                        photoUri = selectedImageUri?.toString()
+            // FOTO
+            Box(
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(CircleShape)
+                    .background(Color.Gray)
+                    .clickable {},
+                contentAlignment = Alignment.Center
+            ) {
+                if (selectedImageUri != null) {
+                    AsyncImage(
+                        model = selectedImageUri,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize()
                     )
+                } else {
+                    Text("Foto", color = Color.DarkGray)
+                }
+            }
 
-                    navController.navigate("login") {
-                        popUpTo("register") { inclusive = true }
+            Spacer(Modifier.height(5.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Button(
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF009688),
+                        contentColor = Color.White
+                    ),onClick = {
+                    permissionLauncher.launch(Manifest.permission.CAMERA)
+                    tempCameraUri = createImageUri(context)
+                    tempCameraUri?.let { uri ->
+                        cameraLauncher.launch(uri)
+                    }
+
+                }) { Text("Cámara") }
+
+                Button(
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF009688),
+                        contentColor = Color.White
+                    )
+                    ,onClick = { galleryLauncher.launch("image/*") }) {
+                    Text("Galería")
+                }
+            }
+
+            Spacer(Modifier.height(20.dp))
+
+            // CAMPOS
+            OutlinedTextField(
+                value = name, onValueChange = { name = it },
+                label = { Text("Nombre completo") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
+                value = email, onValueChange = { email = it },
+                label = { Text("Email") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
+                value = password, onValueChange = { password = it },
+                label = { Text("Contraseña") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            // GÉNERO (Dropdown)
+            ExposedDropdownMenuBox(
+                expanded = generoExpanded,
+                onExpandedChange = { generoExpanded = !generoExpanded }
+            ) {
+                OutlinedTextField(
+                    value = genero,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Género") },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = generoExpanded,
+                    onDismissRequest = { generoExpanded = false }
+                ) {
+                    generos.forEach {
+                        DropdownMenuItem(
+                            text = { Text(it) },
+                            onClick = {
+                                genero = it
+                                generoExpanded = false
+                            }
+                        )
                     }
                 }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Crear cuenta")
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            // Fecha nacimiento
+            Button(
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF009688),
+                    contentColor = Color.White
+                )
+                ,onClick = { datePicker.show() },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    if (fechaNacimiento == 0L)
+                        "Seleccionar fecha de nacimiento"
+                    else
+                        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(
+                            Date(
+                                fechaNacimiento
+                            )
+                        )
+                )
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            OutlinedTextField(
+                value = peso,
+                onValueChange = { peso = it.filter { c -> c.isDigit() || c == '.' } },
+                label = { Text("Peso (kg)") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
+                value = altura,
+                onValueChange = { altura = it.filter { c -> c.isDigit() } },
+                label = { Text("Altura (cm)") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(20.dp))
+
+            Button(
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF009688),
+                    contentColor = Color.White
+                )
+                ,onClick = {
+                    // VALIDACIONES
+                    when {
+                        name.isEmpty() -> errorMsg = "El nombre es obligatorio."
+                        !email.contains("@") -> errorMsg = "Ingresa un email válido."
+                        password.length < 6 -> errorMsg =
+                            "La contraseña debe tener mínimo 6 caracteres."
+
+                        genero == "Seleccionar" -> errorMsg = "Selecciona un género."
+                        fechaNacimiento == 0L -> errorMsg = "Selecciona una fecha de nacimiento."
+                        peso.isEmpty() || altura.isEmpty() -> errorMsg =
+                            "Debes ingresar peso y altura."
+
+                        else -> {
+                            userViewModel.addUser(
+                                name = name,
+                                email = email,
+                                password = password,
+                                genero = genero,
+                                fechanacimiento = fechaNacimiento,
+                                peso = peso.toDouble(),
+                                altura = altura.toDouble(),
+                                photoUri = selectedImageUri?.toString()
+                            )
+
+                            navController.navigate("login") {
+                                popUpTo("register") { inclusive = true }
+                            }
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Crear cuenta")
+            }
         }
     }
 }

@@ -39,4 +39,6 @@ interface UserRepository {
 
     // lOGINN -
     suspend fun login(email: String, password: String): UserEntity?
+    suspend fun updateUser(user: UserEntity)
+
 }

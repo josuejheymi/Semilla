@@ -15,6 +15,7 @@ import com.yey.semilla.ui.navigation.Screen
 import kotlinx.coroutines.delay
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.ui.graphics.Color
 
 //import androidx.compose.material.icons.filled.MedicalServices
 
@@ -29,36 +30,35 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 @Composable
 fun SplashScreen(navController: NavController) {
 
-    // Animación simple de escala del logo
-    var startAnimation by remember { mutableStateOf(false) }
-    val scale = animateFloatAsState(targetValue = if (startAnimation) 1f else 0f)
+    var start by remember { mutableStateOf(false) }
+    val scale = animateFloatAsState(if (start) 1f else 0.6f)
 
-    // Lanzamos animación y navegación
     LaunchedEffect(Unit) {
-        startAnimation = true
-        delay(3000) // espera 3 segundos
+        start = true
+        delay(2000)
         navController.navigate(Screen.Login.route) {
-            popUpTo(Screen.Splash.route) { inclusive = true } // elimina splash de backstack
+            popUpTo(Screen.Splash.route) { inclusive = true }
         }
     }
-    // INTERFAZ DE USUARIO
+
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.primary // Fondo con el color primario de la app.
+        color = Color(0xFF66FFCC) // Cambia el fondo de pantalla
     ) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = Icons.Default.FavoriteBorder, // Icono del logo.
+                imageVector = Icons.Default.FavoriteBorder,
                 contentDescription = "Logo",
                 modifier = Modifier
-                    .size(100.dp)
-                    // Aplica la escala animada al icono.
+                    .size(120.dp)
                     .scale(scale.value),
-                tint = MaterialTheme.colorScheme.onPrimary
+                tint = Color(0xFF000000)   // Cambia el color del icono - o blanco (0xFFFFFFFF)
             )
         }
     }
+
 }
+

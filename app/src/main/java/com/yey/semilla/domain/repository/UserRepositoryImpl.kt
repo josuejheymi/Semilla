@@ -25,5 +25,8 @@ class UserRepositoryImpl(private val userDao: UserDao) : UserRepository {
     override suspend fun login(email: String, password: String): UserEntity? {
         return userDao.login(email, password)
     }
+    override suspend fun updateUser(user: UserEntity) {
+        userDao.updateUser(user)
+    }
 
 }

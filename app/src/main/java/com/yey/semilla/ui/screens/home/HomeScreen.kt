@@ -16,13 +16,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.yey.semilla.data.local.model.MedicationEntity
 import com.yey.semilla.data.local.model.ReminderEntity
 import com.yey.semilla.data.local.model.ReminderWithMedication
 import com.yey.semilla.data.local.model.UserEntity
+import com.yey.semilla.ui.components.BottomNavigationBar
 import com.yey.semilla.ui.navigation.Screen
 import com.yey.semilla.ui.viewmodel.ReminderViewModel
 import com.yey.semilla.ui.viewmodel.UserViewModel
@@ -45,12 +49,17 @@ fun HomeScreen(
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            ModalDrawerSheet {
+            ModalDrawerSheet(
+                drawerContainerColor = Color(0xFFD4EFDF) //Color del container del sub menu
+            ) {
+
                 Spacer(modifier = Modifier.height(20.dp))
                 Text(
                     text = "Menú",
+                    color = Color.Black,
                     style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier
+                        .padding(16.dp)
                 )
 
                 NavigationDrawerItem(
@@ -58,13 +67,24 @@ fun HomeScreen(
                     selected = false,
                     onClick = { navController.navigate(Screen.Profile.route) }
                 )
+
                 NavigationDrawerItem(
                     label = { Text("Medicamentos") },
                     selected = false,
-                    onClick = { }
+                    onClick = { navController.navigate("medication_list") }
                 )
                 NavigationDrawerItem(
-                    label = { Text("Cerrar Sesión") },
+                    label = { Text("Ajustes") },
+                    selected = false,
+                    onClick = {  }
+                )
+                NavigationDrawerItem(
+                    label = { Text("Editar Perfil") },
+                    selected = false,
+                    onClick = { navController.navigate(Screen.EditProfile.route) }
+                )
+                NavigationDrawerItem(
+                    label = { Text("Cerrar Sesión", color = Color.Red) },
                     selected = false,
                     onClick = {
                         userViewModel.logout()
@@ -74,7 +94,8 @@ fun HomeScreen(
                     }
                 )
             }
-        }
+        },
+        modifier = Modifier.background(color =Color.Black )
     ) {
         Scaffold(
             topBar = {
@@ -82,6 +103,10 @@ fun HomeScreen(
                     title = {
                         Text(text = "Hola, ${user?.name ?: "Invitado"}")
                     },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = Color(0xFFFFFFFF), //fondo de container del saludo
+                        titleContentColor = Color(0xFF000000)
+                    ),
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(Icons.Default.Menu, contentDescription = "Abrir menú")
@@ -90,14 +115,22 @@ fun HomeScreen(
                 )
             },
             floatingActionButton = {
-                FloatingActionButton(onClick = { navController.navigate(Screen.AddReminder.route) }) {
+                FloatingActionButton(
+                    onClick = { navController.navigate(Screen.AddReminder.route)},
+                    containerColor = Color(0xFF27AE60),
+                    contentColor = Color.White
+
+                ) {
                     Text("+")
                 }
-            }
+            },
+            bottomBar = {
+                BottomNavigationBar(navController)}
         ) { paddingValues ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .background(Color(0xFFB2FFB2)) // Color de fondo de HOME
                     .padding(paddingValues)
                     .padding(16.dp)
             ) {
@@ -108,11 +141,19 @@ fun HomeScreen(
                     Spacer(modifier = Modifier.height(20.dp))
                 }
 
-                Text(text = "Tus recordatorios", style = MaterialTheme.typography.titleMedium)
+                Text(text = "Tus recordatorios", color = Color(0xFF000000), style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.height(12.dp))
-
+                // ORDENAMOS POR HORA ANTES DE MOSTRAR -Los recordatorios llegan desde el ViewModel sin orden específico.
+                //Para ordenarlos por hora, los convierto de formato HH:mm a minutos totales del día (hora × 60 + minuto), y con sortedBy los muestro en orden cronológico antes de renderizar la lista.
+                val sortedReminders = remindersState.sortedBy { reminder ->
+                    val time = reminder.reminder.time       // "HH:mm"
+                    val parts = time.split(":")
+                    val hour = parts[0].toInt()
+                    val minute = parts[1].toInt()
+                    hour * 60 + minute   // convertimos a minutos totales
+                }
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    items(remindersState) { item ->
+                    items(sortedReminders) { item ->
                         ReminderCardWithMedication(item)
                     }
                 }
@@ -148,7 +189,7 @@ fun IMCCard(user: UserEntity) {
         Column(modifier = Modifier.padding(16.dp)) {
 
             Text(
-                text = "Estado corporal",
+                text = "Estado corporal",color = Color(0xFF000000),
                 style = MaterialTheme.typography.titleMedium
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -166,9 +207,11 @@ fun IMCCard(user: UserEntity) {
 @Composable
 fun ReminderCardWithMedication(reminderWithMedication: ReminderWithMedication) {
     Card(
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFFFF)), // color de fondo de la card
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp),
+            .background(Color(0xFFC8E6C9)) // color del borde
+            .padding(vertical = 6.dp), // espacio entre cards
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         val med: MedicationEntity = reminderWithMedication.medication
@@ -177,14 +220,15 @@ fun ReminderCardWithMedication(reminderWithMedication: ReminderWithMedication) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+
                 .padding(16.dp)
         ) {
 
-            Text(text = med.name, style = MaterialTheme.typography.titleMedium)
+            Text(text = med.name, style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold))
             Spacer(modifier = Modifier.height(6.dp))
             Text(text = "Total: ${med.totalPills} — Restantes: ${med.pillsRemaining}")
             Spacer(modifier = Modifier.height(6.dp))
-            Text(text = "Hora: ${rem.time}")
+            Text(text = "Hora: ${rem.time}", color = Color.Black, style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold))
             Spacer(modifier = Modifier.height(8.dp))
 
             med.imageUri?.let { uriStr ->

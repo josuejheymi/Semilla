@@ -10,10 +10,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.yey.semilla.data.local.model.UserEntity
+import com.yey.semilla.ui.components.BottomNavigationBar
 import kotlin.math.pow
 import java.text.SimpleDateFormat
 import java.util.*
@@ -41,70 +43,104 @@ fun PerfilScreen(
 
     val fechaNacimiento = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
         .format(Date(user.fechanacimiento))
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+    Scaffold(
+        bottomBar = {
+            BottomNavigationBar(navController)}
     ) {
-
-        // FOTO
-        if (user.photoUri != null) {
-            Image(
-                painter = rememberAsyncImagePainter(user.photoUri),
-                contentDescription = "Foto de perfil",
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = Color(0xFFE0FFFA)
+        ) {
+            Column(
                 modifier = Modifier
-                    .size(120.dp)
-                    .clip(CircleShape)
-            )
-        } else {
-            // Imagen por defecto
-            Icon(
-                imageVector = Icons.Default.AccountCircle,
-                contentDescription = null,
-                modifier = Modifier.size(120.dp)
-            )
-        }
+                    .fillMaxSize()
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
 
-        Spacer(Modifier.height(20.dp))
+                // FOTO
+                if (user.photoUri != null) {
+                    Image(
+                        painter = rememberAsyncImagePainter(user.photoUri),
+                        contentDescription = "Foto de perfil",
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(CircleShape)
+                    )
+                } else {
+                    // Imagen por defecto
+                    Icon(
+                        imageVector = Icons.Default.AccountCircle,
+                        contentDescription = null,
+                        modifier = Modifier.size(120.dp)
+                    )
+                }
 
-        // NOMBRE
-        Text(user.name, style = MaterialTheme.typography.headlineMedium)
-        Text(user.email, style = MaterialTheme.typography.bodyMedium)
+                Spacer(Modifier.height(20.dp))
 
-        Spacer(Modifier.height(20.dp))
+                // NOMBRE
+                Text(
+                    user.name,
+                    color = Color(0xFF202020),
+                    style = MaterialTheme.typography.headlineMedium
+                )
+                Text(
+                    user.email,
+                    color = Color(0xFF202020),
+                    style = MaterialTheme.typography.bodyMedium
+                )
 
-        // INFO PERSONAL
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(4.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text("Información del usuario", style = MaterialTheme.typography.titleMedium)
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(20.dp))
 
-                Text("Género: ${user.genero}")
-                Text("Fecha de nacimiento: $fechaNacimiento")
-                Text("Peso: ${user.peso} kg")
-                Text("Altura: ${user.altura} m")
+                // INFO PERSONAL
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.cardElevation(4.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            "Información del usuario",
+                            color = Color(0xFF202020),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Spacer(Modifier.height(12.dp))
+
+                        Text("Género: ${user.genero}", color = Color(0xFF555555))
+                        Text("Fecha de nacimiento: $fechaNacimiento", color = Color(0xFF555555))
+                        Text("Peso: ${user.peso} kg", color = Color(0xFF555555))
+                        Text("Altura: ${user.altura} m", color = Color(0xFF555555))
+                    }
+                }
+
+                Spacer(Modifier.height(20.dp))
+
+                // IMC
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.cardElevation(4.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            "Estado físico",
+                            color = Color(0xFF202020),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Spacer(Modifier.height(12.dp))
+
+                        Text("IMC: ${"%.2f".format(imc)}", color = Color(0xFF555555))
+                        Text("Clasificación: $imcMsg", color = Color(0xFF555555))
+                    }
+                }
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF009688),
+                        contentColor = Color.White
+                    ),
+                    onClick = {navController.navigate("edit_profile")}
+                ) { Text("Editar")}
             }
-        }
 
-        Spacer(Modifier.height(20.dp))
-
-        // IMC
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(4.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text("Estado físico", style = MaterialTheme.typography.titleMedium)
-                Spacer(Modifier.height(12.dp))
-
-                Text("IMC: ${"%.2f".format(imc)}")
-                Text("Clasificación: $imcMsg")
-            }
         }
     }
 }

@@ -16,6 +16,7 @@ import com.yey.semilla.ui.screens.auth.SplashScreen
 import com.yey.semilla.ui.screens.home.HomeScreen
 import com.yey.semilla.ui.screens.home.PerfilScreen
 import com.yey.semilla.ui.screens.home.reminder.AddReminderScreen
+import com.yey.semilla.ui.screens.home.user.EditProfileScreen
 
 // 👉 USERS
 import com.yey.semilla.ui.screens.home.user.UserListScreen
@@ -23,6 +24,7 @@ import com.yey.semilla.ui.screens.home.user.UserRegisterScreen
 
 // 👉 MEDICATIONS
 import com.yey.semilla.ui.screens.medications.AddMedicationScreen
+import com.yey.semilla.ui.screens.medications.MedicationListScreen
 
 // 👉 VIEWMODELS
 import com.yey.semilla.ui.viewmodel.ReminderViewModel
@@ -44,7 +46,10 @@ sealed class Screen(val route: String) {
 
     object Profile : Screen("profile")
 
+    object EditProfile : Screen("edit_profile")
+
     object AddMedication : Screen("add_medication")
+
 }
 
 @Composable
@@ -90,7 +95,9 @@ fun AppNavHost(
                 userViewModel = userViewModel
             )
         }
-
+        composable("medication_list") {
+            MedicationListScreen(navController, reminderViewModel)
+        }
 
         composable(Screen.Register.route) {
             RegisterScreen(navController, userViewModel)
@@ -104,6 +111,11 @@ fun AppNavHost(
         composable(Screen.UserRegister.route) {
             UserRegisterScreen(navController, userViewModel)
         }
+        composable(Screen.EditProfile.route) {
+            val user = userViewModel.currentUser.collectAsState().value
+            EditProfileScreen(navController, userViewModel, user!!)
+        }
+
 
         // -------------------- HOME --------------------
         composable(Screen.Home.route) {

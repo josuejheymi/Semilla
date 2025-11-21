@@ -34,6 +34,11 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
             }
         }
     }
+    //EDITA USUARIO
+    fun updateUser(user: UserEntity) = viewModelScope.launch {
+        repository.updateUser(user)
+        _currentUser.value = user //  Importante!!!!!!!!!!!: actualizar usuario en memoria
+    }
 
     // ---------------------------
     //      REGISTRAR USUARIO
