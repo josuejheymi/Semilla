@@ -1,6 +1,6 @@
 package com.yey.semilla.domain.repository
 
-import com.yey.semilla.data.local.model.UserEntity
+import com.yey.semilla.domain.model.UserEntity
 import kotlinx.coroutines.flow.Flow
 /**
  * 🧱 PATRÓN REPOSITORIO: CONTRATO DE LA CAPA DE DOMINIO 🛡️

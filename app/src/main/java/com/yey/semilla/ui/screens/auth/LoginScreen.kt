@@ -1,6 +1,5 @@
 package com.yey.semilla.ui.screens.auth
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -13,24 +12,25 @@ import androidx.navigation.NavController
 import com.yey.semilla.ui.navigation.Screen
 import com.yey.semilla.ui.viewmodel.UserViewModel
 import kotlinx.coroutines.delay
-// El LoginScreen es un Composable (una pieza de UI) que permite al usuario ingresar sus credenciales. Muestra cómo la UI se conecta con el UserViewModel para manejar el estado (éxito/fallo del login) y las acciones (el botón de ingreso).
+
+// Pantalla de Login: conecta la UI con el UserViewModel para manejar el estado del login.
 @Composable
 fun LoginScreen(
     navController: NavController,
-    onLogin: (String, String) -> Unit,
     userViewModel: UserViewModel
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
     // Observa cambios en loginSuccess y currentUser automáticamente
-    val loginSuccess by userViewModel.loginSuccess.collectAsState() //Convierte Flow de ViewModel a estado de Compose
+    val loginSuccess by userViewModel.loginSuccess.collectAsState()
     val currentUser by userViewModel.currentUser.collectAsState()
 
     var loginError by remember { mutableStateOf<String?>(null) }
+    var loginAttemptCount by remember { mutableStateOf(0) }
 
-    //  Navegar cuando el login funciona
-    LaunchedEffect(loginSuccess) {
+    // 🚀 Navegar cuando el login funciona
+    LaunchedEffect(loginSuccess, currentUser) {
         if (loginSuccess && currentUser != null) {
             loginError = null
             navController.navigate(Screen.Home.route) {
@@ -38,24 +38,39 @@ fun LoginScreen(
             }
         }
     }
-    Surface (
+
+    // ❌ Mostrar mensaje de error solo después de intentar loguear
+    LaunchedEffect(loginAttemptCount) {
+        if (loginAttemptCount == 0) return@LaunchedEffect
+
+        // Espera un poco para que el ViewModel termine el login()
+        delay(200)
+
+        if (!loginSuccess || currentUser == null) {
+            loginError = "Correo o contraseña incorrectos."
+        }
+    }
+
+    Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFFE0FFFA)
-    ){
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(25.dp),  // Espacio entre los bordes y el contenido
-            horizontalAlignment = Alignment.CenterHorizontally, // Esto centra horizontalmente iniciar sesion
+                .padding(25.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
 
-            Text("Iniciar Sesión",
+            Text(
+                "Iniciar Sesión",
                 color = Color(0xFF009688),
-                style = MaterialTheme.typography.headlineMedium)
+                style = MaterialTheme.typography.headlineMedium
+            )
             Spacer(Modifier.height(24.dp))
 
-            //   Mostrar mensaje de error
+            // Mensaje de error
             if (loginError != null) {
                 Text(
                     text = loginError!!,
@@ -84,7 +99,6 @@ fun LoginScreen(
                 },
                 label = { Text("Contraseña") },
                 modifier = Modifier.fillMaxWidth()
-
             )
 
             Spacer(Modifier.height(24.dp))
@@ -93,46 +107,31 @@ fun LoginScreen(
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF66BB6A),
                     contentColor = Color.White
-                ),shape = RoundedCornerShape(12.dp) // Define el tipo de forma, este caso son bordes redondeados
-                ,onClick = {
+                ),
+                shape = RoundedCornerShape(12.dp),
+                onClick = {
                     if (email.isEmpty() || password.isEmpty()) {
                         loginError = "Completa ambos campos."
                     } else {
-                        // Ejecuta el login
-                        onLogin(email, password)
-
-                        //  Esperamos al ViewModel para ver si falló
-                        // SIN usar LaunchedEffect dentro del botón
-                        // Usamos un callback seguro
+                        // Ejecuta el login directamente contra el ViewModel
                         loginError = null
+                        userViewModel.login(email, password)
+                        loginAttemptCount++   // Marca que se intentó hacer login
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
-
             ) {
                 Text("Ingresar")
-            }
-
-            // Este efecto detecta login fallido
-            LaunchedEffect(email, password, loginSuccess) {
-                if (!loginSuccess && email.isNotEmpty() && password.isNotEmpty()) {
-                    // Esperamos un poco para que el ViewModel responda
-                    delay(150)
-
-                    if (!userViewModel.loginSuccess.value) {
-                        loginError = "Correo o contraseña incorrectos."
-                    }
-                }
             }
 
             Spacer(Modifier.height(16.dp))
 
             TextButton(
-
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF009688),
                     contentColor = Color.White
-                ),onClick = { navController.navigate(Screen.Register.route) }
+                ),
+                onClick = { navController.navigate(Screen.Register.route) }
             ) {
                 Text("Crear una cuenta")
             }

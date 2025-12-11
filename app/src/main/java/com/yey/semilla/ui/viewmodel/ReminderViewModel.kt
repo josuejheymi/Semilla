@@ -2,9 +2,9 @@ package com.yey.semilla.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.yey.semilla.data.local.model.MedicationEntity
-import com.yey.semilla.data.local.model.ReminderEntity
-import com.yey.semilla.data.local.model.ReminderWithMedication
+import com.yey.semilla.domain.model.MedicationEntity
+import com.yey.semilla.domain.model.ReminderEntity
+import com.yey.semilla.domain.model.ReminderWithMedication
 import com.yey.semilla.domain.repository.ReminderRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,12 +21,12 @@ class ReminderViewModel(
     private val _medications = MutableStateFlow<List<MedicationEntity>>(emptyList())
     val medications: StateFlow<List<MedicationEntity>> = _medications.asStateFlow()
 
-    // 👉 usuario actual dinámico
+    // Usuario actual cargado dinámicamente después del login
     private var currentUserId: Int? = null
 
-    /**
-     * 🔥 Cargar datos del usuario actual
-     */
+    // ---------------------------------------------------------
+    // 🔥 Cargar datos del usuario actual
+    // ---------------------------------------------------------
     fun loadForUser(userId: Int) {
         currentUserId = userId
 
@@ -43,9 +43,9 @@ class ReminderViewModel(
         }
     }
 
-    /**
-     * 🔥 Crear recordatorio ATADO al usuario correcto
-     */
+    // ---------------------------------------------------------
+    // 🔥 Crear Recordatorio
+    // ---------------------------------------------------------
     fun addReminder(
         medicationId: Int,
         startDate: Long,
@@ -59,7 +59,7 @@ class ReminderViewModel(
 
         val reminder = ReminderEntity(
             medicationId = medicationId,
-            userId = userId,   // ahora SIEMPRE el usuario correcto
+            userId = userId,
             startDate = startDate,
             endDate = endDate,
             timesPerDay = timesPerDay,
@@ -70,6 +70,9 @@ class ReminderViewModel(
         repository.addReminder(reminder)
     }
 
+    // ---------------------------------------------------------
+    // CRUD de medicamentos
+    // ---------------------------------------------------------
     fun addMedication(med: MedicationEntity) = viewModelScope.launch {
         repository.addMedication(med)
     }

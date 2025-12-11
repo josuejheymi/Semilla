@@ -7,13 +7,27 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.*
+import androidx.compose.material3.BottomAppBarDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
@@ -22,10 +36,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import com.yey.semilla.data.local.model.MedicationEntity
-import com.yey.semilla.data.local.model.ReminderEntity
-import com.yey.semilla.data.local.model.ReminderWithMedication
-import com.yey.semilla.data.local.model.UserEntity
+import com.yey.semilla.domain.model.MedicationEntity
+import com.yey.semilla.domain.model.ReminderEntity
+import com.yey.semilla.domain.model.ReminderWithMedication
+import com.yey.semilla.domain.model.UserEntity
 import com.yey.semilla.ui.components.BottomNavigationBar
 import com.yey.semilla.ui.navigation.Screen
 import com.yey.semilla.ui.viewmodel.ReminderViewModel
@@ -50,16 +64,14 @@ fun HomeScreen(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet(
-                drawerContainerColor = Color(0xFFD4EFDF) //Color del container del sub menu
+                drawerContainerColor = Color(0xFFD4EFDF) // Color del container del sub menú
             ) {
-
                 Spacer(modifier = Modifier.height(20.dp))
                 Text(
                     text = "Menú",
                     color = Color.Black,
                     style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier
-                        .padding(16.dp)
+                    modifier = Modifier.padding(16.dp)
                 )
 
                 NavigationDrawerItem(
@@ -73,15 +85,22 @@ fun HomeScreen(
                     selected = false,
                     onClick = { navController.navigate("medication_list") }
                 )
+
                 NavigationDrawerItem(
                     label = { Text("Ajustes") },
                     selected = false,
-                    onClick = {  }
+                    onClick = { /* TODO: ir a ajustes */ }
                 )
+
                 NavigationDrawerItem(
                     label = { Text("Editar Perfil") },
                     selected = false,
                     onClick = { navController.navigate(Screen.EditProfile.route) }
+                )
+                NavigationDrawerItem(
+                    label = { Text("Lista de usuarios") },
+                    selected = false,
+                    onClick = { navController.navigate(Screen.UserList.route) }
                 )
                 NavigationDrawerItem(
                     label = { Text("Cerrar Sesión", color = Color.Red) },
@@ -95,7 +114,7 @@ fun HomeScreen(
                 )
             }
         },
-        modifier = Modifier.background(color =Color.Black )
+        modifier = Modifier.background(color = Color.Black)
     ) {
         Scaffold(
             topBar = {
@@ -104,7 +123,7 @@ fun HomeScreen(
                         Text(text = "Hola, ${user?.name ?: "Invitado"}")
                     },
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = Color(0xFFFFFFFF), //fondo de container del saludo
+                        containerColor = Color(0xFFFFFFFF),
                         titleContentColor = Color(0xFF000000)
                     ),
                     navigationIcon = {
@@ -116,16 +135,16 @@ fun HomeScreen(
             },
             floatingActionButton = {
                 FloatingActionButton(
-                    onClick = { navController.navigate(Screen.AddReminder.route)},
+                    onClick = { navController.navigate(Screen.AddReminder.route) },
                     containerColor = Color(0xFF27AE60),
                     contentColor = Color.White
-
                 ) {
                     Text("+")
                 }
             },
             bottomBar = {
-                BottomNavigationBar(navController)}
+                BottomNavigationBar(navController)
+            }
         ) { paddingValues ->
             Column(
                 modifier = Modifier
@@ -141,17 +160,22 @@ fun HomeScreen(
                     Spacer(modifier = Modifier.height(20.dp))
                 }
 
-                Text(text = "Tus recordatorios", color = Color(0xFF000000), style = MaterialTheme.typography.titleMedium)
+                Text(
+                    text = "Tus recordatorios",
+                    color = Color(0xFF000000),
+                    style = MaterialTheme.typography.titleMedium
+                )
                 Spacer(modifier = Modifier.height(12.dp))
-                // ORDENAMOS POR HORA ANTES DE MOSTRAR -Los recordatorios llegan desde el ViewModel sin orden específico.
-                //Para ordenarlos por hora, los convierto de formato HH:mm a minutos totales del día (hora × 60 + minuto), y con sortedBy los muestro en orden cronológico antes de renderizar la lista.
+
+                // Ordenamos por hora antes de mostrar
                 val sortedReminders = remindersState.sortedBy { reminder ->
                     val time = reminder.reminder.time       // "HH:mm"
                     val parts = time.split(":")
-                    val hour = parts[0].toInt()
-                    val minute = parts[1].toInt()
+                    val hour = parts.getOrNull(0)?.toIntOrNull() ?: 0
+                    val minute = parts.getOrNull(1)?.toIntOrNull() ?: 0
                     hour * 60 + minute   // convertimos a minutos totales
                 }
+
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     items(sortedReminders) { item ->
                         ReminderCardWithMedication(item)
@@ -162,15 +186,18 @@ fun HomeScreen(
     }
 }
 
-
 /************************************************************
- *   🟢 TARJETA IMC (IMC + categoría + color bonito)
+ *   🟢 TARJETA IMC (IMC + categoría + color)
  ************************************************************/
 @Composable
 fun IMCCard(user: UserEntity) {
 
-    // IMC = Peso / (altura^2)
-    val alturaMetros = user.altura / 100
+    // OJO:
+    // Si user.altura está en METROS, usa:
+    // val alturaMetros = user.altura
+    // Si está en CENTÍMETROS, usa:
+    // val alturaMetros = user.altura / 100
+    val alturaMetros = user.altura / 100   // ajusta según tu modelo real
     val imc = user.peso / alturaMetros.pow(2)
 
     val (categoria, color) = when {
@@ -181,15 +208,14 @@ fun IMCCard(user: UserEntity) {
     }
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.25f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-
             Text(
-                text = "Estado corporal",color = Color(0xFF000000),
+                text = "Estado corporal",
+                color = Color(0xFF000000),
                 style = MaterialTheme.typography.titleMedium
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -200,17 +226,16 @@ fun IMCCard(user: UserEntity) {
     }
 }
 
-
 /************************************************************
  *   TARJETA DE CADA RECORDATORIO
  ************************************************************/
 @Composable
 fun ReminderCardWithMedication(reminderWithMedication: ReminderWithMedication) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFFFF)), // color de fondo de la card
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFFFF)), // fondo card
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFFC8E6C9)) // color del borde
+            .background(Color(0xFFC8E6C9)) // color detrás de la card
             .padding(vertical = 6.dp), // espacio entre cards
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
@@ -220,15 +245,21 @@ fun ReminderCardWithMedication(reminderWithMedication: ReminderWithMedication) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-
                 .padding(16.dp)
         ) {
 
-            Text(text = med.name, style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold))
+            Text(
+                text = med.name,
+                style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            )
             Spacer(modifier = Modifier.height(6.dp))
             Text(text = "Total: ${med.totalPills} — Restantes: ${med.pillsRemaining}")
             Spacer(modifier = Modifier.height(6.dp))
-            Text(text = "Hora: ${rem.time}", color = Color.Black, style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold))
+            Text(
+                text = "Hora: ${rem.time}",
+                color = Color.Black,
+                style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            )
             Spacer(modifier = Modifier.height(8.dp))
 
             med.imageUri?.let { uriStr ->

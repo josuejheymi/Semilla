@@ -1,6 +1,7 @@
 package com.yey.semilla.ui.screens.medications
 
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -13,35 +14,44 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import com.yey.semilla.data.local.model.MedicationEntity
+import com.yey.semilla.domain.model.MedicationEntity
 import com.yey.semilla.ui.components.BottomNavigationBar
-import com.yey.semilla.ui.viewmodel.ReminderViewModel
+import com.yey.semilla.ui.navigation.Screen
+import com.yey.semilla.ui.viewmodel.MedicationViewModel
+import com.yey.semilla.ui.viewmodel.UserViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddMedicationScreen(
     navController: NavController,
-    reminderViewModel: ReminderViewModel,
-    userId: Int
+    userViewModel: UserViewModel,
+    medicationViewModel: MedicationViewModel
 ) {
+    // Campos del formulario
     var name by remember { mutableStateOf("") }
     var totalPills by remember { mutableStateOf("") }
     var pillsRemaining by remember { mutableStateOf("") }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
 
-    // Seleccionar imagen de galería
+    // Usuario actual (para saber el userId)
+    val currentUser by userViewModel.currentUser.collectAsState()
+
+    // Selector de imagen (galería)
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         imageUri = uri
     }
+
     Scaffold(
         bottomBar = {
-            BottomNavigationBar(navController)}
-
-    ) {
+            BottomNavigationBar(navController)
+        }
+    ) { paddingValues ->
         Surface(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
             color = Color(0xFFE0FFFA)
         ) {
             Column(
@@ -50,14 +60,34 @@ fun AddMedicationScreen(
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
-
             ) {
 
+                // Si no hay usuario logueado
+                if (currentUser == null) {
+                    Text(
+                        text = "Debes iniciar sesión para registrar medicamentos.",
+                        color = Color.Red,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = {
+                            navController.navigate(Screen.Login.route) {
+                                popUpTo(Screen.Home.route) { inclusive = false }
+                            }
+                        }
+                    ) {
+                        Text("Ir al login")
+                    }
+                    return@Column
+                }
+
                 Text(
-                    "Agregar Medicamento",
+                    text = "Agregar Medicamento",
                     color = Color(0xFF009688),
                     style = MaterialTheme.typography.titleLarge
                 )
+
                 Spacer(modifier = Modifier.height(20.dp))
 
                 // Nombre
@@ -73,7 +103,7 @@ fun AddMedicationScreen(
                 // Total de pastillas
                 OutlinedTextField(
                     value = totalPills,
-                    onValueChange = { totalPills = it.filter { c -> c.isDigit() } },
+                    onValueChange = { txt -> totalPills = txt.filter { it.isDigit() } },
                     label = { Text("Total de pastillas", color = Color.Gray) },
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -83,14 +113,14 @@ fun AddMedicationScreen(
                 // Pastillas restantes
                 OutlinedTextField(
                     value = pillsRemaining,
-                    onValueChange = { pillsRemaining = it.filter { c -> c.isDigit() } },
+                    onValueChange = { txt -> pillsRemaining = txt.filter { it.isDigit() } },
                     label = { Text("Pastillas restantes", color = Color.Gray) },
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Selección de imagen
+                // Botón seleccionar imagen
                 Button(
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
@@ -123,18 +153,29 @@ fun AddMedicationScreen(
                         contentColor = Color.Black
                     ),
                     onClick = {
+                        Log.d("AddMedication", "Botón presionado. Validando campos...")
+
                         if (name.isNotEmpty() && totalPills.isNotEmpty()) {
+
+                            val userId = currentUser!!.id.toInt() // por si tu id es Long
 
                             val med = MedicationEntity(
                                 userId = userId,
                                 name = name,
                                 totalPills = totalPills.toInt(),
                                 pillsRemaining = pillsRemaining.toIntOrNull() ?: totalPills.toInt(),
-                                imageUri = imageUri?.toString()
+                                // De momento NO subimos la imagen al backend, así evitamos líos de permisos
+                                imageUri = null
+                                // Si luego quieres guardar el path local:
+                                // imageUri = imageUri?.toString()
                             )
 
-                            reminderViewModel.addMedication(med)
+                            Log.d("AddMedication", "Enviando medicamento al ViewModel: ${med.name}")
+                            medicationViewModel.addMedication(med)
+
                             navController.popBackStack()
+                        } else {
+                            Log.e("AddMedication", "Error: Campos vacíos")
                         }
                     }
                 ) {

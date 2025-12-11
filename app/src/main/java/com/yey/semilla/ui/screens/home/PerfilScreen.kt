@@ -14,8 +14,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import com.yey.semilla.data.local.model.UserEntity
 import com.yey.semilla.ui.components.BottomNavigationBar
+import com.yey.semilla.ui.navigation.Screen
+import com.yey.semilla.ui.viewmodel.UserViewModel
 import kotlin.math.pow
 import java.text.SimpleDateFormat
 import java.util.*
@@ -23,15 +24,29 @@ import java.util.*
 @Composable
 fun PerfilScreen(
     navController: NavController,
-    user: UserEntity?
+    userViewModel: UserViewModel
 ) {
+    // Obtenemos el usuario actual desde el ViewModel
+    val userState by userViewModel.currentUser.collectAsState()
+    val user = userState
+
     if (user == null) {
-        Text("No hay usuario cargado")
+        // Si no hay usuario (por ejemplo, no hay login), mostramos mensaje sencillo
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("No hay usuario cargado")
+        }
         return
     }
 
-    // Calcular IMC con altura en METROS
-    val alturaMetros = user.altura
+    // ⚠ IMPORTANTE: en tu app la altura se guarda en CENTÍMETROS
+    // (porque en el registro pones "Altura (cm)" y guardas directamente ese número)
+    // Por eso acá la convertimos a METROS para el IMC:
+    val alturaMetros = user.altura / 100.0
     val imc = user.peso / alturaMetros.pow(2)
 
     val imcMsg = when {
@@ -43,12 +58,16 @@ fun PerfilScreen(
 
     val fechaNacimiento = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
         .format(Date(user.fechanacimiento))
+
     Scaffold(
         bottomBar = {
-            BottomNavigationBar(navController)}
-    ) {
+            BottomNavigationBar(navController)
+        }
+    ) { paddingValues ->
         Surface(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
             color = Color(0xFFE0FFFA)
         ) {
             Column(
@@ -78,7 +97,7 @@ fun PerfilScreen(
 
                 Spacer(Modifier.height(20.dp))
 
-                // NOMBRE
+                // NOMBRE + EMAIL
                 Text(
                     user.name,
                     color = Color(0xFF202020),
@@ -108,7 +127,8 @@ fun PerfilScreen(
                         Text("Género: ${user.genero}", color = Color(0xFF555555))
                         Text("Fecha de nacimiento: $fechaNacimiento", color = Color(0xFF555555))
                         Text("Peso: ${user.peso} kg", color = Color(0xFF555555))
-                        Text("Altura: ${user.altura} m", color = Color(0xFF555555))
+                        // Mostramos la altura en cm para que sea consistente con el registro
+                        Text("Altura: ${user.altura} cm", color = Color(0xFF555555))
                     }
                 }
 
@@ -131,16 +151,21 @@ fun PerfilScreen(
                         Text("Clasificación: $imcMsg", color = Color(0xFF555555))
                     }
                 }
+
+                Spacer(Modifier.height(20.dp))
+
+                // BOTÓN EDITAR → navega a la pantalla de edición
                 Button(
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF009688),
                         contentColor = Color.White
                     ),
-                    onClick = {navController.navigate("edit_profile")}
-                ) { Text("Editar")}
+                    onClick = { navController.navigate(Screen.EditProfile.route) }
+                ) {
+                    Text("Editar")
+                }
             }
-
         }
     }
 }
