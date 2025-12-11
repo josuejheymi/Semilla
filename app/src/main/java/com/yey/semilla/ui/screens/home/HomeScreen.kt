@@ -177,14 +177,8 @@ fun HomeScreen(
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Ordenamos por hora antes de mostrar
-                val sortedReminders = remindersState.sortedBy { reminder ->
-                    val time = reminder.reminder.time       // "HH:mm"
-                    val parts = time.split(":")
-                    val hour = parts.getOrNull(0)?.toIntOrNull() ?: 0
-                    val minute = parts.getOrNull(1)?.toIntOrNull() ?: 0
-                    hour * 60 + minute   // convertimos a minutos totales
-                }
+                // Ordenamos por hora antes de mostrar - llamanado a la funcion que esta en reminder
+                val sortedReminders = remindersState.sortedBy { it.reminder.time }
 
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     items(sortedReminders) { item ->
