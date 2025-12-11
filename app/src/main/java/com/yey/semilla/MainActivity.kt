@@ -13,6 +13,8 @@ import com.yey.semilla.data.repository.UserRepositoryImpl
 import com.yey.semilla.ui.navigation.AppNavHost
 import com.yey.semilla.ui.theme.SemillaTheme
 import com.yey.semilla.ui.viewmodel.*
+import com.yey.semilla.ui.viewmodel.WeatherViewModel
+import com.yey.semilla.ui.viewmodel.WeatherViewModelFactory
 
 class MainActivity : ComponentActivity() {
 
@@ -54,7 +56,10 @@ class MainActivity : ComponentActivity() {
         val medicationViewModel: MedicationViewModel by viewModels {
             MedicationViewModelFactory(medicationRepository)
         }
-
+        //weatherViewModel
+        val weatherViewModel: WeatherViewModel by viewModels {
+            WeatherViewModelFactory()
+        }
         // 6) Cargar Compose
         setContent {
             SemillaTheme {
@@ -63,7 +68,8 @@ class MainActivity : ComponentActivity() {
                     navController = navController,
                     userViewModel = userViewModel,
                     reminderViewModel = reminderViewModel,
-                    medicationViewModel = medicationViewModel
+                    medicationViewModel = medicationViewModel,
+                    weatherViewModel = weatherViewModel
                 )
             }
         }

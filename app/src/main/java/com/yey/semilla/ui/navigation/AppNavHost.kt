@@ -30,6 +30,7 @@ import com.yey.semilla.ui.viewmodel.MedicationViewModel
 // VIEWMODELS
 import com.yey.semilla.ui.viewmodel.ReminderViewModel
 import com.yey.semilla.ui.viewmodel.UserViewModel
+import com.yey.semilla.ui.viewmodel.WeatherViewModel
 
 // --------------------------------------------------------------
 // Rutas de navegación definidas como objetos organizados
@@ -62,7 +63,8 @@ fun AppNavHost(
     navController: NavHostController,
     userViewModel: UserViewModel,
     reminderViewModel: ReminderViewModel,
-    medicationViewModel: MedicationViewModel
+    medicationViewModel: MedicationViewModel,
+    weatherViewModel: WeatherViewModel
 ) {
 
     // Observa si el login fue correcto
@@ -152,6 +154,7 @@ fun AppNavHost(
                 navController = navController,
                 reminderViewModel = reminderViewModel,
                 userViewModel = userViewModel,
+                weatherViewModel = weatherViewModel,
                 user = user
             )
         }
