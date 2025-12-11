@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.room.*
 import com.yey.semilla.data.local.converters.Converters
 import com.yey.semilla.data.local.dao.*
-import com.yey.semilla.data.local.model.*
+import com.yey.semilla.domain.model.MedicationEntity
+import com.yey.semilla.domain.model.ReminderEntity
+import com.yey.semilla.domain.model.UserEntity
 
 @Database(
     entities = [

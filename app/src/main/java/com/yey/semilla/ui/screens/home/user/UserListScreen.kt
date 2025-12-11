@@ -5,7 +5,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -18,24 +21,63 @@ fun UserListScreen(
     userViewModel: UserViewModel
 ) {
     val users by userViewModel.users.collectAsState()
+    val isLoading by userViewModel.isLoading.collectAsState()
+    val errorMessage by userViewModel.errorMessage.collectAsState()
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+    // Al entrar a esta pantalla, pedimos usuarios al backend
+    LaunchedEffect(Unit) {
+        userViewModel.refreshUsersFromBackend()
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
         Text("Usuarios", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(16.dp))
 
-        LazyColumn {
+        when {
+            isLoading -> {
+                Text("Cargando usuarios desde el servidor...")
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+            errorMessage != null -> {
+                Text(
+                    "Error: $errorMessage",
+                    color = MaterialTheme.colorScheme.error
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+        }
+
+        LazyColumn(
+            modifier = Modifier.weight(1f, fill = true)
+        ) {
             items(users) { user ->
-                Card(modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp)
-                    .clickable { /* futuro detalle */ }) {
-                    Text("${user.name} - ${user.email}", modifier = Modifier.padding(16.dp))
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                        .clickable {
+                            // Aquí en el futuro podrías navegar al detalle del usuario
+                            // navController.navigate("user_detail/${user.id}")
+                        }
+                ) {
+                    Text(
+                        text = "${user.name} - ${user.email}",
+                        modifier = Modifier.padding(16.dp)
+                    )
                 }
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = { navController.navigate(Screen.UserRegister.route) }, modifier = Modifier.fillMaxWidth()) {
+
+        Button(
+            onClick = { navController.navigate(Screen.UserRegister.route) },
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Text("Agregar Usuario")
         }
     }

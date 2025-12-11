@@ -6,7 +6,6 @@ import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -44,7 +43,9 @@ fun RegisterScreen(
     var fechaNacimiento by remember { mutableStateOf(0L) }
 
     // ---------------- ERRORES ----------------
-    var errorMsg by remember { mutableStateOf<String?>(null) }
+    var localError by remember { mutableStateOf<String?>(null) }
+    val vmError by userViewModel.errorMessage.collectAsState()
+    val errorToShow = localError ?: vmError
 
     // ---------------- FOTO PERFIL ----------------
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
@@ -92,9 +93,11 @@ fun RegisterScreen(
     // ---------------- GÉNERO DROPDOWN ----------------
     var generoExpanded by remember { mutableStateOf(false) }
     val generos = listOf("Hombre", "Mujer")
+
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFE0FFFA)) {
+        color = Color(0xFFE0FFFA)
+    ) {
 
         // ---------------- UI ----------------
         Column(
@@ -105,18 +108,20 @@ fun RegisterScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            Text("Crear cuenta",
+            Text(
+                "Crear cuenta",
                 color = Color(0xFF009688),
-                style = MaterialTheme.typography.headlineMedium)
+                style = MaterialTheme.typography.headlineMedium
+            )
 
-            Spacer(Modifier.height(1.dp))
+            Spacer(Modifier.height(8.dp))
 
-            // ERRORES
-            errorMsg?.let {
+            // ERRORES (validación + backend)
+            errorToShow?.let {
                 Text(
                     text = it,
-                    color = Color(0xFFFF0000), //Color de las letras de error
-                    modifier = Modifier.padding(bottom = 1.dp)
+                    color = Color(0xFFFF0000),
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
             }
 
@@ -140,7 +145,7 @@ fun RegisterScreen(
                 }
             }
 
-            Spacer(Modifier.height(5.dp))
+            Spacer(Modifier.height(8.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -150,21 +155,23 @@ fun RegisterScreen(
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF009688),
                         contentColor = Color.White
-                    ),onClick = {
-                    permissionLauncher.launch(Manifest.permission.CAMERA)
-                    tempCameraUri = createImageUri(context)
-                    tempCameraUri?.let { uri ->
-                        cameraLauncher.launch(uri)
+                    ),
+                    onClick = {
+                        permissionLauncher.launch(Manifest.permission.CAMERA)
+                        tempCameraUri = createImageUri(context)
+                        tempCameraUri?.let { uri ->
+                            cameraLauncher.launch(uri)
+                        }
                     }
-
-                }) { Text("Cámara") }
+                ) { Text("Cámara") }
 
                 Button(
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF009688),
                         contentColor = Color.White
-                    )
-                    ,onClick = { galleryLauncher.launch("image/*") }) {
+                    ),
+                    onClick = { galleryLauncher.launch("image/*") }
+                ) {
                     Text("Galería")
                 }
             }
@@ -228,19 +235,16 @@ fun RegisterScreen(
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF009688),
                     contentColor = Color.White
-                )
-                ,onClick = { datePicker.show() },
+                ),
+                onClick = { datePicker.show() },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
                     if (fechaNacimiento == 0L)
                         "Seleccionar fecha de nacimiento"
                     else
-                        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(
-                            Date(
-                                fechaNacimiento
-                            )
-                        )
+                        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                            .format(Date(fechaNacimiento))
                 )
             }
 
@@ -266,35 +270,36 @@ fun RegisterScreen(
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF009688),
                     contentColor = Color.White
-                )
-                ,onClick = {
-                    // VALIDACIONES
-                    when {
-                        name.isEmpty() -> errorMsg = "El nombre es obligatorio."
-                        !email.contains("@") -> errorMsg = "Ingresa un email válido."
-                        password.length < 6 -> errorMsg =
-                            "La contraseña debe tener mínimo 6 caracteres."
-
-                        genero == "Seleccionar" -> errorMsg = "Selecciona un género."
-                        fechaNacimiento == 0L -> errorMsg = "Selecciona una fecha de nacimiento."
-                        peso.isEmpty() || altura.isEmpty() -> errorMsg =
+                ),
+                onClick = {
+                    // VALIDACIONES LOCALES
+                    localError = when {
+                        name.isEmpty() -> "El nombre es obligatorio."
+                        !email.contains("@") -> "Ingresa un email válido."
+                        password.length < 6 -> "La contraseña debe tener mínimo 6 caracteres."
+                        genero == "Seleccionar" -> "Selecciona un género."
+                        fechaNacimiento == 0L -> "Selecciona una fecha de nacimiento."
+                        peso.isEmpty() || altura.isEmpty() ->
                             "Debes ingresar peso y altura."
+                        else -> null
+                    }
 
-                        else -> {
-                            userViewModel.addUser(
-                                name = name,
-                                email = email,
-                                password = password,
-                                genero = genero,
-                                fechanacimiento = fechaNacimiento,
-                                peso = peso.toDouble(),
-                                altura = altura.toDouble(),
-                                photoUri = selectedImageUri?.toString()
-                            )
+                    if (localError == null) {
+                        // Llamamos al ViewModel (esto ya crea en backend + local)
+                        userViewModel.addUser(
+                            name = name,
+                            email = email,
+                            password = password,
+                            genero = genero,
+                            fechanacimiento = fechaNacimiento,
+                            peso = peso.toDouble(),
+                            altura = altura.toDouble(),
+                            photoUri = selectedImageUri?.toString()
+                        )
 
-                            navController.navigate("login") {
-                                popUpTo("register") { inclusive = true }
-                            }
+                        // Navegamos al login
+                        navController.navigate("login") {
+                            popUpTo("register") { inclusive = true }
                         }
                     }
                 },

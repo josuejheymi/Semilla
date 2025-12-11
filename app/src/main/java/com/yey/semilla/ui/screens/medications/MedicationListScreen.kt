@@ -1,7 +1,6 @@
 package com.yey.semilla.ui.screens.medications
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -9,6 +8,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
@@ -17,18 +19,31 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import com.yey.semilla.data.local.model.MedicationEntity
+import com.yey.semilla.domain.model.MedicationEntity
 import com.yey.semilla.ui.components.BottomNavigationBar
 import com.yey.semilla.ui.navigation.Screen
-import com.yey.semilla.ui.viewmodel.ReminderViewModel
+import com.yey.semilla.ui.viewmodel.MedicationViewModel
+import com.yey.semilla.ui.viewmodel.UserViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MedicationListScreen(
     navController: NavController,
-    reminderViewModel: ReminderViewModel
+    userViewModel: UserViewModel,
+    medicationViewModel: MedicationViewModel
 ) {
-    val meds = reminderViewModel.medications.value
+    // Usuario actual (desde UserViewModel)
+    val currentUser by userViewModel.currentUser.collectAsState()
+
+    // Lista de medicamentos (desde MedicationViewModel)
+    val meds by medicationViewModel.medications.collectAsState()
+
+    // Cuando cambie el usuario logueado, cargamos sus medicamentos
+    LaunchedEffect(currentUser?.id) {
+        currentUser?.let { user ->
+            medicationViewModel.loadMedications(user.id)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -50,7 +65,8 @@ fun MedicationListScreen(
             }
         },
         bottomBar = {
-            BottomNavigationBar(navController)}
+            BottomNavigationBar(navController)
+        }
     ) { padding ->
 
         Column(
@@ -60,6 +76,17 @@ fun MedicationListScreen(
                 .padding(horizontal = 16.dp)
         ) {
 
+            // Si no hay usuario logueado
+            if (currentUser == null) {
+                Text(
+                    text = "Debes iniciar sesión para ver tus medicamentos.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(top = 20.dp)
+                )
+                return@Column
+            }
+
+            // Si la lista está vacía
             if (meds.isEmpty()) {
                 Text(
                     text = "No tienes medicamentos registrados.",
@@ -69,6 +96,7 @@ fun MedicationListScreen(
                 return@Column
             }
 
+            // Lista de medicamentos
             LazyColumn(
                 modifier = Modifier.fillMaxSize()
             ) {

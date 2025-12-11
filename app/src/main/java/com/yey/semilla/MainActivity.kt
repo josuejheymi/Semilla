@@ -6,8 +6,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.navigation.compose.rememberNavController
 import com.yey.semilla.data.local.database.AppDatabase
-import com.yey.semilla.domain.repository.ReminderRepositoryImpl
-import com.yey.semilla.domain.repository.UserRepositoryImpl
+import com.yey.semilla.data.remote.RetrofitClient
+import com.yey.semilla.data.repository.MedicationRepositoryImpl
+import com.yey.semilla.data.repository.ReminderRepositoryImpl
+import com.yey.semilla.data.repository.UserRepositoryImpl
 import com.yey.semilla.ui.navigation.AppNavHost
 import com.yey.semilla.ui.theme.SemillaTheme
 import com.yey.semilla.ui.viewmodel.*
@@ -17,37 +19,53 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 🔥 Inicializamos la base de datos Room
+        // 1) Base de datos Room
         val db = AppDatabase.getInstance(this)
 
-        // 🔥 Creamos los repositorios reales que acceden a la DB
+        // 2) Repositorio de usuarios (Room + backend via UserViewModel)
         val userRepository = UserRepositoryImpl(db.userDao())
-        val reminderRepository = ReminderRepositoryImpl(db.reminderDao(), db.medicationDao())
 
-        // 🔥 ViewModel de usuario
-        // Se crea usando una Factory que le entrega el userRepository
+        // 3) Repositorio de recordatorios (Room + Spring Boot)
+        val reminderRepository = ReminderRepositoryImpl(
+            reminderDao = db.reminderDao(),
+            medicationDao = db.medicationDao(),
+            api = RetrofitClient.api          //  ahora también pasa la API
+        )
+
+        // 4) Repositorio de medicamentos (Room + Spring Boot)
+        val medicationRepository = MedicationRepositoryImpl(
+            medicationDao = db.medicationDao(),
+            api = RetrofitClient.api          //  ya la tenías aquí
+        )
+
+        // 5) ViewModels
+
+        // UserViewModel
         val userViewModel: UserViewModel by viewModels {
             UserViewModelFactory(userRepository)
         }
 
-        // 🔥 ViewModel de recordatorios
-        // 🚫 YA NO RECIBE userId AQUÍ
-        // El usuario activo se carga dinámicamente luego de login.
+        // ReminderViewModel
         val reminderViewModel: ReminderViewModel by viewModels {
             ReminderViewModelFactory(reminderRepository)
         }
 
-        // 🔥 Composición de la UI usando Jetpack Compose
+        // MedicationViewModel
+        val medicationViewModel: MedicationViewModel by viewModels {
+            MedicationViewModelFactory(medicationRepository)
+        }
+
+        // 6) Cargar Compose
         setContent {
             SemillaTheme {
                 val navController = rememberNavController()
                 AppNavHost(
                     navController = navController,
                     userViewModel = userViewModel,
-                    reminderViewModel = reminderViewModel
+                    reminderViewModel = reminderViewModel,
+                    medicationViewModel = medicationViewModel
                 )
             }
         }
-
     }
 }
