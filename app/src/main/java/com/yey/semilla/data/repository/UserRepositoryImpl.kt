@@ -1,8 +1,10 @@
-package com.yey.semilla.domain.repository
+package com.yey.semilla.data.repository
 
 import com.yey.semilla.data.local.dao.UserDao
-import com.yey.semilla.data.local.model.UserEntity
+import com.yey.semilla.domain.model.UserEntity
+import com.yey.semilla.domain.repository.UserRepository
 import kotlinx.coroutines.flow.Flow
+
 /**
  * 🛠️ IMPLEMENTACIÓN DEL REPOSITORIO (Capa de Datos)
  * * Propósito: Esta clase implementa el contrato 'UserRepository' y conecta la lógica de la app

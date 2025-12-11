@@ -1,4 +1,4 @@
-package com.yey.semilla.data.local.model
+package com.yey.semilla.domain.model
 
 import androidx.room.Embedded
 import androidx.room.Relation

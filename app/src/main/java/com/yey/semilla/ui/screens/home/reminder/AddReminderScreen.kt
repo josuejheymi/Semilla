@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.yey.semilla.data.local.model.MedicationEntity
+import com.yey.semilla.domain.model.MedicationEntity
 import com.yey.semilla.ui.components.BottomNavigationBar
 import com.yey.semilla.ui.navigation.Screen
 import com.yey.semilla.ui.viewmodel.ReminderViewModel
@@ -25,13 +25,16 @@ fun AddReminderScreen(
     reminderViewModel: ReminderViewModel,
     medications: List<MedicationEntity>
 ) {
+
     Scaffold(
-        bottomBar = {
-            BottomNavigationBar(navController)}
-    ) {
+        bottomBar = { BottomNavigationBar(navController) }
+    ) { paddingValues ->
+
         Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = Color(0xFFE0FFFA)// Color de FOndo
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            color = Color(0xFFE0FFFA)
         ) {
 
             var selectedMedication by remember { mutableStateOf<MedicationEntity?>(null) }
@@ -62,10 +65,7 @@ fun AddReminderScreen(
                     },
                     dismissButton = {
                         TextButton(onClick = { showTimePicker = false }) {
-                            Text(
-                                "Cancelar",
-                                color = Color.Red
-                            )
+                            Text("Cancelar", color = Color.Red)
                         }
                     },
                     text = { TimePicker(state = timePickerState) }
@@ -77,7 +77,7 @@ fun AddReminderScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally, // Esto centra horizontalmente iniciar sesion
+                horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
 
@@ -86,6 +86,7 @@ fun AddReminderScreen(
                     color = Color(0xFF009688),
                     style = MaterialTheme.typography.titleLarge
                 )
+
                 Spacer(Modifier.height(20.dp))
 
                 // ------- SI NO HAY MEDICAMENTOS -------
@@ -138,7 +139,7 @@ fun AddReminderScreen(
                         }
 
                         DropdownMenuItem(
-                            text = { Text("Agregar medicamento", color = Color(0xFF000000)) },
+                            text = { Text("Agregar medicamento", color = Color.Black) },
                             trailingIcon = { Icon(Icons.Default.Add, "Agregar medicamento") },
                             onClick = {
                                 expanded = false
@@ -158,11 +159,7 @@ fun AddReminderScreen(
                     label = { Text("Hora") },
                     trailingIcon = {
                         IconButton(onClick = { showTimePicker = true }) {
-                            Icon(
-                                Icons.Default.AccessTime,
-                                "Seleccionar hora",
-                                tint = Color(0xFF009688)
-                            )
+                            Icon(Icons.Default.AccessTime, "Seleccionar hora", tint = Color(0xFF009688))
                         }
                     },
                     modifier = Modifier.fillMaxWidth()
@@ -187,16 +184,18 @@ fun AddReminderScreen(
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF009688),
                         contentColor = Color.White
-                    ), onClick = {
+                    ),
+                    onClick = {
                         val med = selectedMedication ?: return@Button
-                        if (time.isNotEmpty()) {
 
+                        if (time.isNotEmpty()) {
                             reminderViewModel.addReminder(
                                 medicationId = med.id,
                                 startDate = startDate,
                                 endDate = endDate,
                                 timesPerDay = timesPerDay.toInt(),
-                                time = time
+                                time = time,
+                                isEnabled = true
                             )
 
                             navController.popBackStack()

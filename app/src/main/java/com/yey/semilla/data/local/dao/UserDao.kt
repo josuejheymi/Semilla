@@ -4,7 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
-import com.yey.semilla.data.local.model.UserEntity
+import com.yey.semilla.domain.model.UserEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
