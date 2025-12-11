@@ -2,11 +2,14 @@ package com.yey.semilla.ui.screens.auth
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.yey.semilla.ui.navigation.Screen
@@ -98,6 +101,11 @@ fun LoginScreen(
                     loginError = null
                 },
                 label = { Text("Contraseña") },
+                visualTransformation = PasswordVisualTransformation(),
+                // --------------------------
+
+                // Opcional: Esto ayuda a que el teclado sepa que es contraseña
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 modifier = Modifier.fillMaxWidth()
             )
 

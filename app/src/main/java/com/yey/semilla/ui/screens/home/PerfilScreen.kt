@@ -43,9 +43,7 @@ fun PerfilScreen(
         return
     }
 
-    // ⚠ IMPORTANTE: en tu app la altura se guarda en CENTÍMETROS
-    // (porque en el registro pones "Altura (cm)" y guardas directamente ese número)
-    // Por eso acá la convertimos a METROS para el IMC:
+    // Altura en cm → metros para IMC
     val alturaMetros = user.altura / 100.0
     val imc = user.peso / alturaMetros.pow(2)
 
@@ -87,7 +85,6 @@ fun PerfilScreen(
                             .clip(CircleShape)
                     )
                 } else {
-                    // Imagen por defecto
                     Icon(
                         imageVector = Icons.Default.AccountCircle,
                         contentDescription = null,
@@ -127,7 +124,6 @@ fun PerfilScreen(
                         Text("Género: ${user.genero}", color = Color(0xFF555555))
                         Text("Fecha de nacimiento: $fechaNacimiento", color = Color(0xFF555555))
                         Text("Peso: ${user.peso} kg", color = Color(0xFF555555))
-                        // Mostramos la altura en cm para que sea consistente con el registro
                         Text("Altura: ${user.altura} cm", color = Color(0xFF555555))
                     }
                 }
@@ -154,7 +150,7 @@ fun PerfilScreen(
 
                 Spacer(Modifier.height(20.dp))
 
-                // BOTÓN EDITAR → navega a la pantalla de edición
+                // BOTÓN EDITAR
                 Button(
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
@@ -164,6 +160,25 @@ fun PerfilScreen(
                     onClick = { navController.navigate(Screen.EditProfile.route) }
                 ) {
                     Text("Editar")
+                }
+
+                Spacer(Modifier.height(12.dp))
+
+                //  BOTÓN CERRAR SESIÓN
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Red,
+                        contentColor = Color.White
+                    ),
+                    onClick = {
+                        userViewModel.logout()
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(Screen.Home.route) { inclusive = true }
+                        }
+                    }
+                ) {
+                    Text("Cerrar sesión")
                 }
             }
         }
