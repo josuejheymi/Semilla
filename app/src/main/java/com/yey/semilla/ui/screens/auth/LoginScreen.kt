@@ -29,7 +29,7 @@ fun LoginScreen(
     var loginError by remember { mutableStateOf<String?>(null) }
     var loginAttemptCount by remember { mutableStateOf(0) }
 
-    // 🚀 Navegar cuando el login funciona
+    //  Navegar cuando el login funciona
     LaunchedEffect(loginSuccess, currentUser) {
         if (loginSuccess && currentUser != null) {
             loginError = null
@@ -39,7 +39,7 @@ fun LoginScreen(
         }
     }
 
-    // ❌ Mostrar mensaje de error solo después de intentar loguear
+    //  Mostrar mensaje de error solo después de intentar loguear
     LaunchedEffect(loginAttemptCount) {
         if (loginAttemptCount == 0) return@LaunchedEffect
 
@@ -53,7 +53,7 @@ fun LoginScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFE0FFFA)
+        color = Color.Black
     ) {
         Column(
             modifier = Modifier
@@ -66,7 +66,7 @@ fun LoginScreen(
             Text(
                 "Iniciar Sesión",
                 color = Color(0xFF009688),
-                style = MaterialTheme.typography.headlineMedium
+                style = MaterialTheme.typography.headlineLarge
             )
             Spacer(Modifier.height(24.dp))
 
@@ -105,7 +105,7 @@ fun LoginScreen(
 
             Button(
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF66BB6A),
+                    containerColor = Color( 0xFF008080 ),
                     contentColor = Color.White
                 ),
                 shape = RoundedCornerShape(12.dp),

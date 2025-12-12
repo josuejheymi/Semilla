@@ -79,31 +79,31 @@ fun HomeScreen(
                 )
 
                 NavigationDrawerItem(
-                    label = { Text("Mi Perfil") },
+                    label = { Text("Mi Perfil",color = Color(0xFF00A9E0)) },
                     selected = false,
                     onClick = { navController.navigate(Screen.Profile.route) }
                 )
 
                 NavigationDrawerItem(
-                    label = { Text("Medicamentos") },
+                    label = { Text("Medicamentos",color = Color(0xFF00A9E0)) },
                     selected = false,
                     onClick = { navController.navigate("medication_list") }
                 )
 
                 NavigationDrawerItem(
-                    label = { Text("Ajustes") },
+                    label = { Text("Ajustes", color = Color(0xFF00A9E0)) },
                     selected = false,
                     onClick = { /* TODO: ir a ajustes */ }
                 )
 
                 NavigationDrawerItem(
-                    label = { Text("Editar Perfil") },
+                    label = { Text("Editar Perfil",color = Color(0xFF00A9E0)) },
                     selected = false,
                     onClick = { navController.navigate(Screen.EditProfile.route) }
                 )
 
                 NavigationDrawerItem(
-                    label = { Text("Lista de usuarios") },
+                    label = { Text("Lista de usuarios",color = Color(0xFF00A9E0 )) },
                     selected = false,
                     onClick = { navController.navigate(Screen.UserList.route) }
                 )
@@ -216,12 +216,12 @@ fun IMCCard(user: UserEntity) {
             Text(
                 text = "Estado corporal",
                 color = Color(0xFF000000),
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleLarge
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text("IMC: ${"%.1f".format(imc)}", style = MaterialTheme.typography.bodyLarge)
-            Text("Clasificación: $categoria", style = MaterialTheme.typography.bodyMedium)
+            Text("IMC: ${"%.1f".format(imc)}", color = Color(0xFF000000), style = MaterialTheme.typography.bodyLarge)
+            Text("Clasificación: $categoria",color = Color(0xFF000000), style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
@@ -246,7 +246,7 @@ fun AirQualityCard(state: AirQualityUiState) {
 
             when {
                 state.isLoading -> {
-                    Text("Cargando datos de calidad del aire…")
+                    Text("Cargando datos de calidad del aire…",color = Color.Magenta)
                 }
 
                 state.error != null -> {
@@ -258,10 +258,10 @@ fun AirQualityCard(state: AirQualityUiState) {
 
                 else -> {
                     state.uvIndex?.let { uv ->
-                        Text("Índice UV: ${"%.1f".format(uv)} ${uvAdvice(uv)}")
+                        Text("Índice UV: ${"%.1f".format(uv)} ${uvAdvice(uv)}",color = Color(0xFFA57865))
                     }
                     state.aqi?.let { aqi ->
-                        Text("AQI europeo: ${"%.1f".format(aqi)}")
+                        Text("AQI europeo: ${"%.1f".format(aqi)}",color = Color.Gray)
                     }
                 }
             }
@@ -299,11 +299,11 @@ fun ReminderCardWithMedication(reminderWithMedication: ReminderWithMedication) {
         ) {
 
             Text(
-                text = med.name,
+                text = med.name, color = Color(0xFF0000FF),
                 style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)
             )
             Spacer(modifier = Modifier.height(6.dp))
-            Text(text = "Total: ${med.totalPills} — Restantes: ${med.pillsRemaining}")
+            Text(text = "Total: ${med.totalPills} — Restantes: ${med.pillsRemaining}",color = Color.Green)
             Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = "Hora: ${rem.time}",
