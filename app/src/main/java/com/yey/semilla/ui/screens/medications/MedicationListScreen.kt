@@ -62,7 +62,7 @@ fun MedicationListScreen(
                 onClick = { navController.navigate(Screen.AddMedication.route) },
                 containerColor = Color(0xFF2ECC71)
             ) {
-                Text("+", color = Color.White)
+                Text("+", fontWeight = FontWeight.Bold, fontSize = 50.sp, color = Color.Blue)
             }
         },
         bottomBar = {
@@ -73,7 +73,7 @@ fun MedicationListScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFE8F5E9)) // 💚 Fondo verde suave para que resalten las cards
+                .background(Color(0xFFE8F5E9)) //  Fondo verde suave para que resalten las cards
                 .padding(padding)
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
@@ -117,7 +117,7 @@ fun MedicationCard(med: MedicationEntity) {
         modifier = Modifier
             .fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            // 💚 Verde más notorio, ya no blanco-gris
+            //  Verde más notorio,
             containerColor = Color(0xFFC8E6C9)
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),

@@ -55,13 +55,14 @@ class MedicationRepositoryImpl(
             }
     }
     override suspend fun addMedication(medication: MedicationEntity) {
-        // 1) Guardar local (para que la UI lo vea al toque)
-        medicationDao.addMedication(medication)
+        // 1. Guardamos localmente para que se vea rápido (efecto instantáneo)
+        // CAPTURAMOS el ID temporal que nos da Room (ej: ID 1)
+        val localId = medicationDao.addMedication(medication).toInt()
 
-        // 2) Intentar mandarlo al backend
         try {
+            // 2. Preparamos el objeto para enviar (id null para que el backend cree uno nuevo)
             val dto = MedicationNetworkDto(
-                id = null,  // 💥 IMPORTANTE: null para que el backend genere el ID
+                id = null,
                 userId = medication.userId.toLong(),
                 name = medication.name,
                 totalPills = medication.totalPills,
@@ -69,21 +70,37 @@ class MedicationRepositoryImpl(
                 imageUri = medication.imageUri
             )
 
-            val created = api.createMedicationForUser(
+            // 3. Enviamos a internet
+            // El backend nos devuelve el objeto FINAL con el ID real (ej: ID 500)
+            val createdDto = api.createMedicationForUser(
                 userId = medication.userId.toLong(),
                 medication = dto
             )
 
-            Log.d(
-                "MedicationRepo",
-                "✅ Medicamento creado en backend con id ${created.id}"
+            Log.d("MedicationRepo", "✅ Creado en nube con ID: ${createdDto.id}")
+
+            // ================================================================
+            // 🛑 AQUÍ ESTÁ LA MAGIA PARA EVITAR DUPLICADOS
+            // ================================================================
+
+            // 4. Borramos el "borrador" local (el ID 1) porque ya no lo necesitamos
+            medicationDao.deleteMedicationById(localId)
+
+            // 5. Insertamos el oficial que vino de internet (el ID 500)
+            val oficialEntity = MedicationEntity(
+                id = createdDto.id?.toInt() ?: 0,
+                userId = createdDto.userId?.toInt() ?: medication.userId,
+                name = createdDto.name,
+                totalPills = createdDto.totalPills,
+                pillsRemaining = createdDto.pillsRemaining,
+                imageUri = createdDto.imageUri
             )
+            medicationDao.addMedication(oficialEntity)
+
         } catch (e: Exception) {
-            Log.e(
-                "MedicationRepo",
-                "⚠️ No se pudo enviar el medicamento al backend: ${e.message}"
-            )
-            // Si quieres, aquí podrías marcarlo como "pendiente de sincronizar"
+            Log.e("MedicationRepo", "⚠️ Error subiendo: ${e.message}")
+            // Si falla internet, NO borramos el localId.
+            // Se queda el ID 1 para que el usuario no pierda su dato.
         }
     }
 }

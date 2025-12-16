@@ -4,6 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.yey.semilla.data.local.database.AppDatabase
 import com.yey.semilla.data.remote.RetrofitClient
@@ -24,53 +28,55 @@ class MainActivity : ComponentActivity() {
         // 1) Base de datos Room
         val db = AppDatabase.getInstance(this)
 
-        // 2) Repositorio de usuarios (Room + backend via UserViewModel)
+        // 2) Repositorios
         val userRepository = UserRepositoryImpl(db.userDao())
 
-        // 3) Repositorio de recordatorios (Room + Spring Boot)
         val reminderRepository = ReminderRepositoryImpl(
             reminderDao = db.reminderDao(),
             medicationDao = db.medicationDao(),
-            api = RetrofitClient.api          //  ahora también pasa la API
+            api = RetrofitClient.api
         )
 
-        // 4) Repositorio de medicamentos (Room + Spring Boot)
         val medicationRepository = MedicationRepositoryImpl(
             medicationDao = db.medicationDao(),
-            api = RetrofitClient.api          //  ya la tenías aquí
+            api = RetrofitClient.api
         )
 
         // 5) ViewModels
-
-        // UserViewModel
         val userViewModel: UserViewModel by viewModels {
             UserViewModelFactory(userRepository)
         }
 
-        // ReminderViewModel
         val reminderViewModel: ReminderViewModel by viewModels {
             ReminderViewModelFactory(reminderRepository)
         }
 
-        // MedicationViewModel
         val medicationViewModel: MedicationViewModel by viewModels {
             MedicationViewModelFactory(medicationRepository)
         }
-        //weatherViewModel
+
         val weatherViewModel: WeatherViewModel by viewModels {
             WeatherViewModelFactory()
         }
+
         // 6) Cargar Compose
         setContent {
             SemillaTheme {
-                val navController = rememberNavController()
-                AppNavHost(
-                    navController = navController,
-                    userViewModel = userViewModel,
-                    reminderViewModel = reminderViewModel,
-                    medicationViewModel = medicationViewModel,
-                    weatherViewModel = weatherViewModel
-                )
+                // Agregamos una Surface que ocupa TODO el tamaño (fillMaxSize)
+                // Esto le da una estructura sólida a la app para manejar el scroll y el teclado.
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    val navController = rememberNavController()
+                    AppNavHost(
+                        navController = navController,
+                        userViewModel = userViewModel,
+                        reminderViewModel = reminderViewModel,
+                        medicationViewModel = medicationViewModel,
+                        weatherViewModel = weatherViewModel
+                    )
+                }
             }
         }
     }
