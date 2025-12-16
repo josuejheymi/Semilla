@@ -1,5 +1,7 @@
 package com.yey.semilla.ui.screens.home.reminder
 
+import android.R
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
@@ -11,7 +13,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.yey.semilla.domain.model.MedicationEntity
 import com.yey.semilla.ui.components.BottomNavigationBar
@@ -25,6 +29,24 @@ fun AddReminderScreen(
     reminderViewModel: ReminderViewModel,
     medications: List<MedicationEntity>
 ) {
+    // Definimos tus colores principales aquí para reutilizarlos
+    val primaryTeal = Color(0xFF009688)
+    val darkTeal = Color(0xFF004D40) // Un verde más oscuro para textos importantes
+    val backgroundMint = Color(0xFFE0FFFA)
+
+    // Configuración de colores para los Inputs (Text Fields)
+    // Esto quita el gris y pone tus colores verdes/negros
+    val customTextFieldColors = OutlinedTextFieldDefaults.colors(
+        focusedBorderColor = primaryTeal,
+        unfocusedBorderColor = primaryTeal.copy(alpha = 0.5f), // Un poco más suave cuando no escribes
+        focusedLabelColor = primaryTeal,
+        unfocusedLabelColor = darkTeal, // Color de la etiqueta cuando no escribes (Ya no gris)
+        cursorColor = primaryTeal,
+        focusedTextColor = Color.Black,
+        unfocusedTextColor = Color.Black,
+        focusedContainerColor = Color.White, // Fondo blanco para que resalte
+        unfocusedContainerColor = Color.White
+    )
 
     Scaffold(
         bottomBar = { BottomNavigationBar(navController) }
@@ -34,7 +56,7 @@ fun AddReminderScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
-            color = Color(0xFFE0FFFA)
+            color = backgroundMint
         ) {
 
             var selectedMedication by remember { mutableStateOf<MedicationEntity?>(null) }
@@ -54,6 +76,7 @@ fun AddReminderScreen(
             // ---------- POPUP SELECTOR DE HORA ----------
             if (showTimePicker) {
                 AlertDialog(
+                    containerColor = Color.White, // Fondo blanco para el popup
                     onDismissRequest = { showTimePicker = false },
                     confirmButton = {
                         TextButton(onClick = {
@@ -61,14 +84,28 @@ fun AddReminderScreen(
                             val m = timePickerState.minute.toString().padStart(2, '0')
                             time = "$h:$m"
                             showTimePicker = false
-                        }) { Text("OK", color = Color.Black) }
+                        }) { Text("OK", color = primaryTeal, fontWeight = FontWeight.Bold) }
                     },
                     dismissButton = {
                         TextButton(onClick = { showTimePicker = false }) {
                             Text("Cancelar", color = Color.Red)
                         }
                     },
-                    text = { TimePicker(state = timePickerState) }
+                    text = {
+                        // Forzamos colores del reloj
+                        TimePicker(
+                            state = timePickerState,
+                            colors = TimePickerDefaults.colors(
+                                selectorColor = primaryTeal,
+                                clockDialSelectedContentColor = Color.White,
+                                clockDialUnselectedContentColor = Color.Yellow,
+                                timeSelectorSelectedContainerColor = Color.Black,
+                                timeSelectorSelectedContentColor = Color.White,
+                                timeSelectorUnselectedContentColor = Color.Black,
+                                timeSelectorUnselectedContainerColor = Color.Green.copy(alpha = 0.2f)
+                            )
+                        )
+                    }
                 )
             }
 
@@ -76,29 +113,31 @@ fun AddReminderScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
+                    .padding(24.dp), // Un poco más de margen
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
 
                 Text(
-                    "Agregar Recordatorio",
-                    color = Color(0xFF009688),
-                    style = MaterialTheme.typography.titleLarge
+                    text = "Agregar Recordatorio",
+                    color = primaryTeal,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
                 )
 
-                Spacer(Modifier.height(20.dp))
+                Spacer(Modifier.height(30.dp))
 
                 // ------- SI NO HAY MEDICAMENTOS -------
                 if (medications.isEmpty()) {
-                    Text("No tienes medicamentos registrados.", color = Color.Red)
-                    Spacer(Modifier.height(10.dp))
+                    Text("No tienes medicamentos registrados.", color = Color.Red, fontWeight = FontWeight.Medium)
+                    Spacer(Modifier.height(16.dp))
 
                     Button(
                         onClick = { navController.navigate(Screen.AddMedication.route) },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = primaryTeal)
                     ) {
-                        Text("Agregar medicamento")
+                        Text("Agregar medicamento", color = Color.White)
                     }
                     return@Surface
                 }
@@ -106,7 +145,14 @@ fun AddReminderScreen(
                 // --------- DROPDOWN DE MEDICAMENTOS ---------
                 var expanded by remember { mutableStateOf(false) }
 
-                Text("Selecciona un medicamento:", color = Color(0xFF009688))
+                // Texto de ayuda más visible
+                Text(
+                    text = "Selecciona un medicamento:",
+                    color = darkTeal,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.align(Alignment.Start)
+                )
                 Spacer(Modifier.height(8.dp))
 
                 ExposedDropdownMenuBox(
@@ -117,8 +163,9 @@ fun AddReminderScreen(
                         value = selectedMedication?.name ?: "",
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Medicamento", color = Color.Gray) },
+                        label = { Text("Medicamento") }, // El color se maneja en customTextFieldColors
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+                        colors = customTextFieldColors, // <--- AQUI APLICAMOS LOS COLORES
                         modifier = Modifier
                             .menuAnchor()
                             .fillMaxWidth()
@@ -126,11 +173,12 @@ fun AddReminderScreen(
 
                     ExposedDropdownMenu(
                         expanded = expanded,
-                        onDismissRequest = { expanded = false }
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier.background(Color.White)
                     ) {
                         medications.forEach { med ->
                             DropdownMenuItem(
-                                text = { Text(med.name, color = Color.Gray) },
+                                text = { Text(med.name, color = Color.Black) }, // Texto negro
                                 onClick = {
                                     selectedMedication = med
                                     expanded = false
@@ -139,8 +187,8 @@ fun AddReminderScreen(
                         }
 
                         DropdownMenuItem(
-                            text = { Text("Agregar medicamento", color = Color.Black) },
-                            trailingIcon = { Icon(Icons.Default.Add, "Agregar medicamento") },
+                            text = { Text("Agregar nuevo...", color = primaryTeal, fontWeight = FontWeight.Bold) },
+                            trailingIcon = { Icon(Icons.Default.Add, "Agregar", tint = primaryTeal) },
                             onClick = {
                                 expanded = false
                                 navController.navigate(Screen.AddMedication.route)
@@ -149,23 +197,24 @@ fun AddReminderScreen(
                     }
                 }
 
-                Spacer(Modifier.height(20.dp))
+                Spacer(Modifier.height(24.dp))
 
                 // --------- HORA ---------
                 OutlinedTextField(
-                    value = if (time.isEmpty()) "Selecciona una hora" else time,
+                    value = if (time.isEmpty()) "" else time,
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Hora") },
+                    label = { Text(if (time.isEmpty()) "Seleccionar Hora" else "Hora") },
                     trailingIcon = {
                         IconButton(onClick = { showTimePicker = true }) {
-                            Icon(Icons.Default.AccessTime, "Seleccionar hora", tint = Color(0xFF009688))
+                            Icon(Icons.Default.AccessTime, "Seleccionar hora", tint = primaryTeal)
                         }
                     },
+                    colors = customTextFieldColors, // <--- COLORES APLICADOS
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(Modifier.height(20.dp))
+                Spacer(Modifier.height(24.dp))
 
                 // --------- VECES POR DÍA ---------
                 OutlinedTextField(
@@ -173,17 +222,20 @@ fun AddReminderScreen(
                     onValueChange = { value ->
                         timesPerDay = value.filter { it.isDigit() }.ifEmpty { "1" }
                     },
-                    label = { Text("Veces al día", color = Color.Gray) },
+                    label = { Text("Veces al día") },
+                    colors = customTextFieldColors, // <--- COLORES APLICADOS
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(Modifier.height(30.dp))
+                Spacer(Modifier.height(40.dp))
 
                 // --------- GUARDAR ---------
                 Button(
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF009688),
-                        contentColor = Color.White
+                        containerColor = primaryTeal,
+                        contentColor = Color.White,
+                        disabledContainerColor = Color.Gray.copy(alpha = 0.5f),
+                        disabledContentColor = Color.White
                     ),
                     onClick = {
                         val med = selectedMedication ?: return@Button
@@ -202,9 +254,12 @@ fun AddReminderScreen(
                         }
                     },
                     enabled = selectedMedication != null && time.isNotEmpty(),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp), // Un poco más alto para mejor tacto
+                    shape = MaterialTheme.shapes.medium
                 ) {
-                    Text("Guardar")
+                    Text("Guardar Recordatorio", fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }

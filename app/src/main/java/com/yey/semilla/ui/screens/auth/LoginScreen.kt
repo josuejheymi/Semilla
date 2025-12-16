@@ -1,139 +1,190 @@
 package com.yey.semilla.ui.screens.auth
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.yey.semilla.ui.navigation.Screen
 import com.yey.semilla.ui.viewmodel.UserViewModel
-import kotlinx.coroutines.delay
+import com.yey.semilla.utils.Validators
+import com.yey.semilla.R
 
-// Pantalla de Login: conecta la UI con el UserViewModel para manejar el estado del login.
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     navController: NavController,
     userViewModel: UserViewModel
 ) {
+    //  COLORES
+    val primaryTeal = Color(0xFF009688)
+    val backgroundMint = Color(0xFFE0FFFA)
+
+    //  CORRECCIÓN DE COLORES DE TEXTO
+    val inputColors = OutlinedTextFieldDefaults.colors(
+        focusedBorderColor = primaryTeal,
+        unfocusedBorderColor = primaryTeal,
+        focusedContainerColor = Color.White,  // Fondo blanco
+        unfocusedContainerColor = Color.White, // Fondo blanco
+        focusedTextColor = Color.Black,       // 🟢 TEXTO NEGRO AL ESCRIBIR
+        unfocusedTextColor = Color.Black,     // 🟢 TEXTO NEGRO AL NO ESCRIBIR
+        cursorColor = primaryTeal
+    )
+
+    // Variables de los campos
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) } // Para el ojito
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // Observa cambios en loginSuccess y currentUser automáticamente
+    // Observamos al ViewModel
     val loginSuccess by userViewModel.loginSuccess.collectAsState()
     val currentUser by userViewModel.currentUser.collectAsState()
 
-    var loginError by remember { mutableStateOf<String?>(null) }
-    var loginAttemptCount by remember { mutableStateOf(0) }
-
-    //  Navegar cuando el login funciona
+    // LÓGICA DE NAVEGACIÓN (Simple: Si hay user, entra)
     LaunchedEffect(loginSuccess, currentUser) {
         if (loginSuccess && currentUser != null) {
-            loginError = null
+            errorMessage = null
             navController.navigate(Screen.Home.route) {
                 popUpTo(Screen.Login.route) { inclusive = true }
             }
         }
     }
 
-    //  Mostrar mensaje de error solo después de intentar loguear
-    LaunchedEffect(loginAttemptCount) {
-        if (loginAttemptCount == 0) return@LaunchedEffect
-
-        // Espera un poco para que el ViewModel termine el login()
-        delay(200)
-
-        if (!loginSuccess || currentUser == null) {
-            loginError = "Correo o contraseña incorrectos."
-        }
-    }
-
+    // UI PRINCIPAL
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color.Black
+        color = backgroundMint // Fondo Menta
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(25.dp),
+                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
 
-            Text(
-                "Iniciar Sesión",
-                color = Color(0xFF009688),
-                style = MaterialTheme.typography.headlineLarge
+
+            // 1. ICONO DE CABECERA (Cambiado a Usuario)
+            Image(
+                painter = painterResource(id = R.drawable.emogi), // 🟢 Carga tu imagen "emogi.jpg"
+                contentDescription = "Emoji saludando",
+                modifier = Modifier.size(100.dp) // Ajusta el tamaño según prefieras
             )
-            Spacer(Modifier.height(24.dp))
-
-            // Mensaje de error
-            if (loginError != null) {
-                Text(
-                    text = loginError!!,
-                    color = Color(0xFFFF0000),
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-            }
-
-            OutlinedTextField(
-                value = email,
-                onValueChange = {
-                    email = it
-                    loginError = null
-                },
-                label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(Modifier.height(12.dp))
-
-            OutlinedTextField(
-                value = password,
-                onValueChange = {
-                    password = it
-                    loginError = null
-                },
-                label = { Text("Contraseña") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(Modifier.height(24.dp))
-
-            Button(
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color( 0xFF008080 ),
-                    contentColor = Color.White
-                ),
-                shape = RoundedCornerShape(12.dp),
-                onClick = {
-                    if (email.isEmpty() || password.isEmpty()) {
-                        loginError = "Completa ambos campos."
-                    } else {
-                        // Ejecuta el login directamente contra el ViewModel
-                        loginError = null
-                        userViewModel.login(email, password)
-                        loginAttemptCount++   // Marca que se intentó hacer login
-                    }
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Ingresar")
-            }
 
             Spacer(Modifier.height(16.dp))
 
-            TextButton(
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF009688),
-                    contentColor = Color.White
-                ),
-                onClick = { navController.navigate(Screen.Register.route) }
+            Text(
+                "Bienvenido",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF004D40)
+            )
+
+            Spacer(Modifier.height(30.dp))
+
+            // MENSAJE DE ERROR (Rojo)
+            if (errorMessage != null) {
+                Text(
+                    text = errorMessage!!,
+                    color = Color.Red,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+            }
+
+            // 2. CAMPO EMAIL
+            OutlinedTextField(
+                value = email,
+                onValueChange = { email = it; errorMessage = null },
+                label = { Text("Email") },
+                leadingIcon = { Icon(Icons.Default.Email, null, tint = primaryTeal) },
+                modifier = Modifier.fillMaxWidth(),
+                colors = inputColors, // 🟢 Aquí aplicamos el color negro de letra
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+            )
+
+            Spacer(Modifier.height(16.dp))
+
+            // 3. CAMPO CONTRASEÑA
+            OutlinedTextField(
+                value = password,
+                onValueChange = { password = it; errorMessage = null },
+                label = { Text("Contraseña") },
+                leadingIcon = { Icon(Icons.Default.Lock, null, tint = primaryTeal) },
+                // EL OJITO PARA VER/OCULTAR
+                trailingIcon = {
+                    val image = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(image, contentDescription = null, tint = Color.Gray)
+                    }
+                },
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                modifier = Modifier.fillMaxWidth(),
+                colors = inputColors, // 🟢 Aquí aplicamos el color negro de letra
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+            )
+
+            Spacer(Modifier.height(30.dp))
+
+            // 4. BOTÓN INGRESAR
+            Button(
+                onClick = {
+                    // VALIDACIONES SIMPLES (Fáciles de explicar)
+                    if (email.isEmpty() || password.isEmpty()) {
+                        errorMessage = "Por favor completa todos los campos."
+                    } else if (!Validators.isEmailValid(email)) {
+                        errorMessage = "El formato del email es incorrecto."
+                    } else {
+                        // Si todo está bien, llamamos al Login
+                        userViewModel.login(email, password)
+                        // Pequeño truco visual: si falla, el ViewModel no actualizará loginSuccess
+                        // y podrias poner un mensaje genérico si tarda mucho, pero así es más simple.
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = primaryTeal),
+                shape = RoundedCornerShape(10.dp)
             ) {
-                Text("Crear una cuenta")
+                Text("Ingresar", fontSize = 18.sp)
+            }
+
+            Spacer(Modifier.height(20.dp))
+
+            // 5. LINK A REGISTRO
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("¿No tienes cuenta?", color = Color.Gray)
+                Spacer(Modifier.width(4.dp))
+                Text(
+                    text = "Regístrate aquí",
+                    color = primaryTeal,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.clickable {
+                        navController.navigate(Screen.Register.route)
+                    }
+                )
             }
         }
     }

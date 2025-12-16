@@ -1,6 +1,7 @@
 package com.yey.semilla.ui.screens.medications
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -61,7 +62,7 @@ fun MedicationListScreen(
                 onClick = { navController.navigate(Screen.AddMedication.route) },
                 containerColor = Color(0xFF2ECC71)
             ) {
-                Text("+", color = Color.White)
+                Text("+", fontWeight = FontWeight.Bold, fontSize = 50.sp, color = Color.Blue)
             }
         },
         bottomBar = {
@@ -72,8 +73,9 @@ fun MedicationListScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(Color(0xFFE8F5E9)) //  Fondo verde suave para que resalten las cards
                 .padding(padding)
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
 
             // Si no hay usuario logueado
@@ -115,9 +117,11 @@ fun MedicationCard(med: MedicationEntity) {
         modifier = Modifier
             .fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFE9F7EF)  // Verde suave
+            //  Verde más notorio,
+            containerColor = Color(0xFFC8E6C9)
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = MaterialTheme.shapes.medium // esquinas redondeadas
     ) {
         Row(
             modifier = Modifier
@@ -138,19 +142,22 @@ fun MedicationCard(med: MedicationEntity) {
             Column {
                 Text(
                     text = med.name,
-                    style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold),
+                    color = Color(0xFF1B5E20) // verde oscuro para el título
                 )
 
                 Spacer(Modifier.height(4.dp))
 
                 Text(
                     text = "Total: ${med.totalPills}",
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color(0xFF2E7D32)
                 )
 
                 Text(
                     text = "Restantes: ${med.pillsRemaining}",
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color(0xFF2E7D32)
                 )
             }
         }

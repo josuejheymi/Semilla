@@ -10,8 +10,13 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface MedicationDao {
 
+    // ⚠️ CAMBIO 1: Agrega ": Long" al final para que devuelva el ID generado
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun addMedication(medication: MedicationEntity)
+    suspend fun addMedication(medication: MedicationEntity): Long
+
+    // ⚠️ CAMBIO 2: Agrega esta función para poder borrar el borrador
+    @Query("DELETE FROM medications WHERE id = :medId")
+    suspend fun deleteMedicationById(medId: Int)
 
     // 🔹 Obtener medicamentos de un usuario
     @Query("SELECT * FROM medications WHERE userId = :userId")
